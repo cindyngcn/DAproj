@@ -24,7 +24,7 @@ const LoginPage = () => {
   
       if (response.data.status === 'success') {
         console.log('Login successful:', response.data.message);
-        // Redirect to admin page
+        // Redirect to admin (Home) page
         navigate('/admin');
       }
     } catch (error) {
