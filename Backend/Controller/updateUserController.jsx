@@ -81,8 +81,10 @@ const updateUserController = (req, res) => {
 
         // Insert new group(s) for the user
         if (group) {
+          console.log(group);
           // Handle multiple groups
           for (let g of group) {
+            console.log("THIS IG OHE GROUP",g);
             const insertGroupQuery =
               "INSERT INTO user_group (user_group_username, user_group_groupName) VALUES (?, ?)";
             connection.query(insertGroupQuery, [username, g], (err) => {

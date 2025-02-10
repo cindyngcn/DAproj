@@ -62,7 +62,6 @@ const loginController = (req, res) => {
       // Set cookie with the JWT token
       res.cookie('authToken', token, {
         httpOnly: true, // Prevent access via JavaScript
-        secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
         sameSite: 'strict', // Protect against CSRF attacks
         maxAge: 3600000, // Cookie expiration time (1 hour in milliseconds)
       });

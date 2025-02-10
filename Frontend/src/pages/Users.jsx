@@ -176,7 +176,7 @@ const Users = () => {
           password: user.password || null,
           email: user.email,
           enabled: user.enabled, 
-          groups: updatedGroups, // Send updated group array
+          group: updatedGroups, // Send updated group array
         },
         { withCredentials: true }
       );
