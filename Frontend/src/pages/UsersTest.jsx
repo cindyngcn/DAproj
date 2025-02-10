@@ -14,26 +14,12 @@ import {
   MenuItem,
   Alert,
   Stack,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  ListItemText,
 } from "@mui/material";
 import Header1 from "../components/header1";
-
-// Username Validation function
-const validateUsername = (username) => {
-  const usernameRegex = /^[a-zA-Z0-9]+$/; // Only alphabets and numbers
-  return usernameRegex.test(username);
-};
-
-// Password validation function
-const validatePassword = (password) => {
-  const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,10}$/;
-  return passwordRegex.test(password);
-};
-
-// Group Name Validation function
-const validateGroupName = (groupName) => {
-  const groupNameRegex = /^[a-zA-Z0-9_]+$/; // Allows only alphabets, numbers, and underscore
-  return groupNameRegex.test(groupName);
-};
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -42,22 +28,23 @@ const Users = () => {
   const [email, setEmail] = useState("");
   const [group, setGroup] = useState("");
   const [enabled, setEnabled] = useState(true);
-  const [message, setMessage] = useState({ text: "", type: "" }); // State for message (success or error)
-  const [groupInput, setGroupInput] = useState(""); // State for new group input
+  const [message, setMessage] = useState({ text: "", type: "" });
+  const [groupInput, setGroupInput] = useState("");
   const [groups, setGroups] = useState([]);
-  const [openAlert, setOpenAlert] = useState(true); // To control alert visibility
+  const [openAlert, setOpenAlert] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false); // To check if the user is an admin
 
   const navigate = useNavigate();
 
-  // Fetch all users (Ensures token is sent)
+  // Fetch all users
   const fetchUsers = async () => {
     try {
       const response = await axios.get("http://localhost:8080/user", {
-        withCredentials: true, // Ensures token is included
+        withCredentials: true,
       });
 
-      console.log("Fetched Users:", response.data); // Debugging log
-      setUsers(response.data.users); // Set users correctly
+      console.log("Fetched Users:", response.data);
+      setUsers(response.data.users);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -67,7 +54,7 @@ const Users = () => {
   const fetchGroups = async () => {
     try {
       const response = await axios.get("http://localhost:8080/groups", {
-        withCredentials: true, // Ensures token is included
+        withCredentials: true,
       });
       setGroups(response.data.groups);
     } catch (error) {
@@ -75,110 +62,163 @@ const Users = () => {
     }
   };
 
+  // Check if the logged-in user is an admin
+  const checkAdminPermission = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/currentUser", {
+        withCredentials: true,
+      });
+
+      if (response.data.isAdmin) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+        navigate("/admin"); // Redirect to unauthorized page
+      }
+    } catch (error) {
+      console.error("Error verifying admin:", error);
+      navigate("/admin"); // Redirect if there's an error verifying admin status
+    }
+  };
+
   useEffect(() => {
+    checkAdminPermission(); // Check if the user is an admin
     fetchUsers();
     fetchGroups();
   }, []);
 
-  // Update an existing user
-  const handleUpdateUser = async (user) => {
-    // Validate password if it is provided
-    if (user.password && !validatePassword(user.password)) {
-      setMessage({
-        text: "Password must be 8-10 characters long and include at least one letter, one number, and one special character.",
-        type: "error",
-      });
+  // Create a new user
+  const handleCreateUser = async () => {
+    // Validate username
+    if (!validateUsername(username)) {
+      setMessage({ text: "Username can only contain letters and numbers.", type: "error" });
       return;
     }
+
+    // Validate password
+    if (password && !validatePassword(password)) {
+      setMessage({ text: "Password must be 8-10 characters long and include at least one letter, one number, and one special character.", type: "error" });
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/createUser",
+        { username, password, email, group, enabled },
+        { withCredentials: true }
+      );
+
+      if (response.data.status === "success") {
+        setMessage({ text: "User created successfully!", type: "success" });
+        setUsername("");
+        setPassword("");
+        setEmail("");
+        setGroup("");
+        setEnabled(true);
+        fetchUsers();
+      }
+    } catch (error) {
+      setMessage({ text: error.response?.data?.message || "An error occurred during user creation", type: "error" });
+    }
+  };
+
+  // Update an existing user
+  const handleUpdateUser = async (user) => {
+    if (user.password && !validatePassword(user.password)) {
+      setMessage({ text: "Password must be 8-10 characters long and include at least one letter, one number, and one special character.", type: "error" });
+      return;
+    }
+
+    let updatedGroups = user.groups || [];
 
     try {
       const response = await axios.put(
         "http://localhost:8080/user/update",
         {
           username: user.username,
-          password: user.password || null, // Update only if provided
-          email: user.username === "Admin1" ? null : user.email, // Prevent updating Admin1's email
-          enabled: user.username === "Admin1" ? true : user.enabled, // Prevent disabling Admin1
-          group: user.username === "Admin1" ? "admin" : user.group, // Prevent changing Admin1's group
+          password: user.password || null,
+          email: user.email,
+          enabled: user.enabled,
+          group: updatedGroups,
         },
         { withCredentials: true }
       );
 
       if (response.data.status === "success") {
-        setMessage({ text: "User updated successfully!", type: "success" }); // Set success message
-        fetchUsers(); // Refresh users list
+        setMessage({ text: "User updated successfully!", type: "success" });
+        fetchUsers();
       }
     } catch (error) {
-      setMessage({
-        text: error.response?.data?.message || "An error occurred during user update",
-        type: "error",
-      });
+      console.error("Error updating user:", error);
+      setMessage({ text: error.response?.data?.message || "An error occurred during user update", type: "error" });
     }
   };
 
-  // Close alert handler
-  const handleCloseAlert = () => {
-    setOpenAlert(false);
-  };
+  const validateUsername = (username) => /^[a-zA-Z0-9]+$/.test(username);
+  const validatePassword = (password) => /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,10}$/.test(password);
+  const validateGroupName = (groupName) => /^[a-zA-Z0-9_]+$/.test(groupName);
 
   return (
     <div>
       <Header1 />
-      <h1 style={{ marginLeft: "20px" }}>Users</h1>
+      {isAdmin && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <h1 style={{ marginLeft: '20px' }}>Users</h1>
+            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}>
+              <TextField
+                label="Group Name"
+                value={groupInput}
+                onChange={(e) => setGroupInput(e.target.value)}
+                error={groupInput && !validateGroupName(groupInput)}
+                helperText={groupInput && !validateGroupName(groupInput) ? "Only alphabets, numbers, and underscores allowed." : ""}
+              />
+              <Button
+                variant="contained"
+                onClick={handleCreateGroup}
+                style={{ marginLeft: '8px' }}
+              >
+                Create Group
+              </Button>
+            </div>
+          </div>
 
-      {/* User Table */}
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Username</TableCell>
-            <TableCell>Password</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Group</TableCell>
-            <TableCell>Account Status</TableCell>
-            <TableCell>Action</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {/* Rows for updating existing users */}
-          {users.length > 0 ? (
-            users.map((user, index) => (
-              <TableRow key={index}>
-                <TableCell>{user.username}</TableCell>
-
-                {/* Password field (editable for all users) */}
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Username</TableCell>
+                <TableCell>Password</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Group</TableCell>
+                <TableCell>Account Status</TableCell>
+                <TableCell>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell>
+                  <TextField
+                    label="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    error={username && !validateUsername(username)}
+                    helperText={username && !validateUsername(username) ? "Only alphabets and numbers allowed." : ""}
+                  />
+                </TableCell>
                 <TableCell>
                   <TextField
                     type="password"
-                    value={user.password || ""}
-                    onChange={(e) => {
-                      const updatedUsers = [...users];
-                      updatedUsers[index].password = e.target.value;
-                      setUsers(updatedUsers);
-                    }}
-                    placeholder="Enter new password"
-                    error={user.password && !validatePassword(user.password)}
-                    helperText={
-                      user.password && !validatePassword(user.password)
-                        ? "Password must be 8-10 characters long, including a letter, number, and special character"
-                        : ""
-                    }
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    error={password && !validatePassword(password)}
+                    helperText={password && !validatePassword(password) ? "Password must be 8-10 characters long" : ""}
                   />
                 </TableCell>
-
-                {/* Email field (disabled for Admin1) */}
                 <TableCell>
-                  <TextField
-                    value={user.email}
-                    disabled={user.username === "Admin1"}
-                  />
+                  <TextField value={email} onChange={(e) => setEmail(e.target.value)} />
                 </TableCell>
-
-                {/* Group selection (disabled for Admin1) */}
                 <TableCell>
-                  <Select
-                    value={user.group || ""}
-                    disabled={user.username === "Admin1"}
-                  >
+                  <Select value={group} onChange={(e) => setGroup(e.target.value)}>
                     {groups.map((grp, index) => (
                       <MenuItem key={index} value={grp}>
                         {grp}
@@ -186,45 +226,97 @@ const Users = () => {
                     ))}
                   </Select>
                 </TableCell>
-
-                {/* Enabled switch (disabled for Admin1) */}
                 <TableCell>
-                  <Switch
-                    checked={user.enabled}
-                    disabled={user.username === "Admin1" ? true : user.enabled}
-                    color="primary"
-                  />
-                  {user.enabled ? "Enabled" : "Disabled"}
+                  <Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} color="primary" />
+                  {enabled ? "Enabled" : "Disabled"}
                 </TableCell>
-
-                {/* Update button */}
                 <TableCell>
-                  <Button
-                    variant="contained"
-                    sx={{ backgroundColor: "#F9C7D4" }}
-                    onClick={() => handleUpdateUser(user)}
-                  >
-                    Update
+                  <Button variant="contained" sx={{ backgroundColor: '#6699CC' }} onClick={handleCreateUser}>
+                    Create
                   </Button>
                 </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan="6">No users found</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
 
-      {/* Show error or success messages */}
-      <Stack sx={{ width: "100%" }} spacing={2}>
-        {message.text && openAlert && (
-          <Alert severity={message.type} onClose={handleCloseAlert}>
-            {message.text}
-          </Alert>
-        )}
-      </Stack>
+              {users.length > 0 ? (
+                users.map((user, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>
+                      <TextField
+                        type="password"
+                        value={user.password || ""}
+                        onChange={(e) => {
+                          const updatedUsers = [...users];
+                          updatedUsers[index].password = e.target.value;
+                          setUsers(updatedUsers);
+                        }}
+                        placeholder="Enter new password"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        value={user.email}
+                        onChange={(e) => {
+                          const updatedUsers = [...users];
+                          updatedUsers[index].email = e.target.value;
+                          setUsers(updatedUsers);
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        multiple
+                        value={user.groups || []}
+                        onChange={(e) => {
+                          const updatedUsers = [...users];
+                          updatedUsers[index].groups = e.target.value;
+                          setUsers(updatedUsers);
+                        }}
+                      >
+                        {groups.map((grp, index) => (
+                          <MenuItem key={index} value={grp}>
+                            <Checkbox checked={user.groups?.includes(grp) || false} />
+                            <ListItemText primary={grp} />
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={user.enabled}
+                        onChange={(e) => {
+                          const updatedUsers = [...users];
+                          updatedUsers[index].enabled = e.target.checked;
+                          setUsers(updatedUsers);
+                        }}
+                        color="primary"
+                      />
+                      {user.enabled ? "Enabled" : "Disabled"}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="contained" sx={{ backgroundColor: '#F9C7D4' }} onClick={() => handleUpdateUser(user)}>
+                        Update
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan="6">No users found</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+
+          <Stack sx={{ width: "100%" }} spacing={2}>
+            {message.text && openAlert && (
+              <Alert severity={message.type} onClose={handleCloseAlert}>
+                {message.text}
+              </Alert>
+            )}
+          </Stack>
+        </div>
+      )}
     </div>
   );
 };

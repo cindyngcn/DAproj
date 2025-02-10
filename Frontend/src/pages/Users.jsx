@@ -50,6 +50,9 @@ const Users = () => {
   const [groupInput, setGroupInput] = useState(""); // State for new group input
   const [groups, setGroups] = useState([]);
   const [openAlert, setOpenAlert] = useState(true); // To control alert visibility
+  // Correct state initialization
+  const [isAdmin, setIsAdmin] = useState(false);
+
 
   const navigate = useNavigate();
 
@@ -79,7 +82,27 @@ const Users = () => {
     }
   };
 
+   // Check if the logged-in user is an admin
+   const checkAdminPermission = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/currentUser", {
+        withCredentials: true,
+      });
+
+      if (response.data.isAdmin) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+        navigate("/admin"); // Redirect to unauthorized page
+      }
+    } catch (error) {
+      console.error("Error verifying admin:", error);
+      navigate("/admin"); // Redirect if there's an error verifying admin status
+    }
+  };
+
   useEffect(() => {
+    checkAdminPermission(); // Check if the user is an admin
     fetchUsers();
     fetchGroups();
   }, []);
@@ -120,44 +143,6 @@ const Users = () => {
     }
   };
 
-  /*const handleUpdateUser = async (user) => {
-    // Validate password if it is provided
-    if (user.password && !validatePassword(user.password)) {
-      setMessage({ text: "Password must be 8-10 characters long and include at least one letter, one number, and one special character.", type: "error" });
-      return;
-    }
-  
-    // Hardcoded admin handling
-    if (user.username === "Admin1") {
-      user.enabled = true; // Prevent disabling Admin1
-      user.groups = "admin"; // Prevent changing Admin1's group //made changes here user.group
-    }
-  
-    try {
-      const response = await axios.put(
-        "http://localhost:8080/user/update",
-        {
-          username: user.username,
-          password: user.password || null,
-          email: user.email,
-          enabled: user.username === "Admin1" ? true : user.enabled, // Prevent disabling Admin1
-          group: user.username === "Admin1" ? "admin" : user.groups, // Prevent changing Admin1's group
-        },
-        { withCredentials: true }
-      );
-  
-      if (response.data.status === "success") {
-        setMessage({ text: "User updated successfully!", type: "success" });
-        fetchUsers(); // Refresh users list
-      }
-    } catch (error) {
-      console.error("Error updating user:", error); // Log the error
-      setMessage({
-        text: error.response?.data?.message || "An error occurred during user update",
-        type: "error",
-      });
-    }
-  };*/
   const handleUpdateUser = async (user) => {
     // Validate password if it is provided
     if (user.password && !validatePassword(user.password)) {

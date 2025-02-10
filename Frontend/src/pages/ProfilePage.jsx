@@ -24,7 +24,7 @@ const ProfilePage = () => {
         }));
         setIsLoading(false);
       })
-      .catch((error) => {
+      .catch(() => {
         setErrorMessage("Failed to fetch user data.");
         setIsLoading(false);
       });
@@ -38,18 +38,29 @@ const ProfilePage = () => {
     }));
   };
 
+  const validatePassword = (password) => {
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,10}$/;
+    return passwordRegex.test(password);
+  };
+
   const handleSave = () => {
+    if (userData.newPassword && !validatePassword(userData.newPassword)) {
+      setErrorMessage("Password must be 8-10 characters and include at least one letter, one number, and one special character.");
+      setSuccessMessage("");
+      return;
+    }
+
     const data = {};
     if (userData.newEmail) data.email = userData.newEmail;
     if (userData.newPassword) data.password = userData.newPassword;
 
     axios
       .put("http://localhost:8080/profile", data, { withCredentials: true })
-      .then((response) => {
+      .then(() => {
         setSuccessMessage("Profile updated successfully.");
         setErrorMessage("");
       })
-      .catch((error) => {
+      .catch(() => {
         setErrorMessage("Failed to update profile.");
         setSuccessMessage("");
       });
@@ -69,16 +80,62 @@ const ProfilePage = () => {
     return <div>Loading...</div>;
   }
 
-  const profileContainerStyle = {
+  return (
+    <div style={styles.profileContainer}>
+      <Header1 style={styles.header} />
+      <div style={styles.profileCard}>
+        <h1 style={styles.profileHeading}><strong>My Profile</strong></h1>
+
+        <div style={styles.inputGroup}>
+          <label style={styles.label}>Username</label>
+          <input type="text" value={userData.username} readOnly style={{ ...styles.input, ...styles.readonlyInput }} />
+        </div>
+
+        <div style={styles.inputGroup}>
+          <label style={styles.label}>Email</label>
+          <input type="text" value={userData.email} readOnly style={{ ...styles.input, ...styles.readonlyInput }} />
+        </div>
+
+        <div style={styles.inputGroup}>
+          <label style={styles.label}>Update Email</label>
+          <input type="email" name="newEmail" value={userData.newEmail} onChange={handleChange} placeholder="Enter new email" style={styles.input} />
+        </div>
+
+        <div style={styles.inputGroup}>
+          <label style={styles.label}>Update Password</label>
+          <input type="password" name="newPassword" value={userData.newPassword} onChange={handleChange} placeholder="Enter new password" style={styles.input} />
+        </div>
+
+        {/* Display Error or Success Message */}
+        {errorMessage && <p style={styles.errorMessage}>{errorMessage}</p>}
+        {successMessage && <p style={styles.successMessage}>{successMessage}</p>}
+
+        <div style={styles.buttonContainer}>
+          <button style={styles.saveButton} onClick={handleSave} onMouseEnter={(e) => (e.target.style.backgroundColor = styles.saveButtonHover.backgroundColor)} onMouseLeave={(e) => (e.target.style.backgroundColor = "#4caf50")}>Save</button>
+          <button style={styles.cancelButton} onClick={handleCancel} onMouseEnter={(e) => (e.target.style.backgroundColor = styles.cancelButtonHover.backgroundColor)} onMouseLeave={(e) => (e.target.style.backgroundColor = "#f44336")}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Styles
+const styles = {
+  profileContainer: {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
     minHeight: "100vh",
     backgroundColor: "#f4f7fc",
-  };
-
-  const profileCardStyle = {
+  },
+  header: {
+    width: "100%",
+    backgroundColor: "#fff",
+    padding: "10px 0",
+    textAlign: "center",
+  },
+  profileCard: {
     backgroundColor: "white",
     padding: "30px",
     borderRadius: "8px",
@@ -86,60 +143,51 @@ const ProfilePage = () => {
     width: "100%",
     maxWidth: "400px",
     textAlign: "center",
-  };
-
-  const profileHeadingStyle = {
+  },
+  profileHeading: {
     textAlign: "center",
     fontSize: "24px",
     marginBottom: "20px",
-  };
-
-  const inputGroupStyle = {
+  },
+  inputGroup: {
     marginBottom: "15px",
-  };
-
-  const labelStyle = {
+  },
+  label: {
     display: "block",
     fontWeight: "600",
     marginBottom: "5px",
-  };
-
-  const inputStyle = {
+  },
+  input: {
     width: "100%",
     padding: "10px",
     border: "1px solid #ddd",
     borderRadius: "5px",
     fontSize: "14px",
     backgroundColor: "#f9f9f9",
-  };
-
-  const readonlyInputStyle = {
+  },
+  readonlyInput: {
     backgroundColor: "#e9ecef",
     cursor: "not-allowed",
-  };
-
-  const errorMessageStyle = {
+  },
+  errorMessage: {
     color: "red",
     fontSize: "14px",
     textAlign: "center",
     marginTop: "10px",
-  };
-
-  const successMessageStyle = {
+  },
+  successMessage: {
     color: "green",
     fontSize: "14px",
     textAlign: "center",
     marginTop: "10px",
-  };
-
-  const buttonContainerStyle = {
+  },
+  buttonContainer: {
     display: "flex",
     justifyContent: "center",
     gap: "10px",
     marginTop: "20px",
-  };
-
-  const saveButtonStyle = {
+  },
+  saveButton: {
     padding: "10px 20px",
     fontSize: "14px",
     border: "none",
@@ -148,9 +196,8 @@ const ProfilePage = () => {
     backgroundColor: "#4caf50",
     color: "white",
     transition: "background-color 0.3s ease",
-  };
-
-  const cancelButtonStyle = {
+  },
+  cancelButton: {
     padding: "10px 20px",
     fontSize: "14px",
     border: "none",
@@ -159,97 +206,13 @@ const ProfilePage = () => {
     backgroundColor: "#f44336",
     color: "white",
     transition: "background-color 0.3s ease",
-  };
-
-  const saveButtonHoverStyle = {
+  },
+  saveButtonHover: {
     backgroundColor: "#45a049",
-  };
-
-  const cancelButtonHoverStyle = {
+  },
+  cancelButtonHover: {
     backgroundColor: "#e53935",
-  };
-
-  const headerStyle = {
-    width: "100%",  // Ensures the header fills the entire width of the page
-    backgroundColor: "#fff",
-    padding: "10px 0",
-    textAlign: "center",
-  };
-
-  return (
-    <div style={profileContainerStyle}>
-      <Header1 style={headerStyle} /> {/* Apply the style here */}
-      <div style={profileCardStyle}>
-        <h1 style={profileHeadingStyle}><strong>My Profile</strong></h1>
-
-        <div style={inputGroupStyle}>
-          <label style={labelStyle}>Username</label>
-          <input
-            type="text"
-            value={userData.username}
-            readOnly
-            style={{ ...inputStyle, ...readonlyInputStyle }}
-          />
-        </div>
-
-        <div style={inputGroupStyle}>
-          <label style={labelStyle}>Email</label>
-          <input
-            type="text"
-            value={userData.email}
-            readOnly
-            style={{ ...inputStyle, ...readonlyInputStyle }}
-          />
-        </div>
-
-        <div style={inputGroupStyle}>
-          <label style={labelStyle}>Update Email</label>
-          <input
-            type="email"
-            name="newEmail"
-            value={userData.newEmail}
-            onChange={handleChange}
-            placeholder="Enter new email"
-            style={inputStyle}
-          />
-        </div>
-
-        <div style={inputGroupStyle}>
-          <label style={labelStyle}>Update Password</label>
-          <input
-            type="password"
-            name="newPassword"
-            value={userData.newPassword}
-            onChange={handleChange}
-            placeholder="Enter new password"
-            style={inputStyle}
-          />
-        </div>
-
-        {errorMessage && <p style={errorMessageStyle}>{errorMessage}</p>}
-        {successMessage && <p style={successMessageStyle}>{successMessage}</p>}
-
-        <div style={buttonContainerStyle}>
-          <button
-            style={saveButtonStyle}
-            onClick={handleSave}
-            onMouseEnter={(e) => (e.target.style.backgroundColor = saveButtonHoverStyle.backgroundColor)}
-            onMouseLeave={(e) => (e.target.style.backgroundColor = "#96DED1")}
-          >
-            Save
-          </button>
-          <button
-            style={cancelButtonStyle}
-            onClick={handleCancel}
-            onMouseEnter={(e) => (e.target.style.backgroundColor = cancelButtonHoverStyle.backgroundColor)}
-            onMouseLeave={(e) => (e.target.style.backgroundColor = "#E30B5C")}
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  },
 };
 
 export default ProfilePage;
