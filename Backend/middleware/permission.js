@@ -46,9 +46,6 @@ const checkGroup = (username, groupName) => {
       AND user_group_groupName = ?
     `;
 
-    console.log("username", username);
-    console.log("groupname", groupName);
-
     connection.execute(query, [username, groupName], (error, results) => {
       if (error) {
         console.error("Error checking user group:", error);
