@@ -379,7 +379,7 @@ const Users = () => {
                   {user.enabled ? "Enabled" : "Disabled"}
                 </TableCell>
                 <TableCell>
-                  <Button variant="contained" sx={{ backgroundColor: '#F9C7D4' }} onClick={() => handleUpdateUser(user)}>
+                  <Button variant="contained" sx={{ backgroundColor: '#cf49bf' }} onClick={() => handleUpdateUser(user)}>
                     Update
                   </Button>
                 </TableCell>
