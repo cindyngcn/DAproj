@@ -105,6 +105,11 @@ const Users = () => {
     checkAdminPermission(); // Check if the user is an admin
     fetchUsers();
     fetchGroups();
+
+    // Set interval to check admin permission every 5 seconds
+   const interval = setInterval(checkAdminPermission, 5000);
+
+   return () => clearInterval(interval); // Clean up interval on unmount
   }, []);
 
   // Create a new user
@@ -143,7 +148,7 @@ const Users = () => {
     }
   };
 
-  const handleUpdateUser = async (user) => {
+  /*const handleUpdateUser = async (user) => {
     // Validate password if it is provided
     if (user.password && !validatePassword(user.password)) {
       setMessage({ text: "Password must be 8-10 characters long and include at least one letter, one number, and one special character.", type: "error" });
@@ -177,7 +182,42 @@ const Users = () => {
         type: "error",
       });
     }
-  };  
+  };*/
+ 
+const handleUpdateUser = async (user) => {
+   if (user.password && !validatePassword(user.password)) {
+     setMessage({ text: "Password must be 8-10 characters long and include a letter, number, and special character.", type: "error" });
+     return;
+   }
+ 
+   let updatedGroups = user.groups || [];
+ 
+   try {
+     const response = await axios.put(
+       "http://localhost:8080/user/update",
+       {
+         username: user.username,
+         password: user.password || null,
+         email: user.email,
+         enabled: user.enabled,
+         group: updatedGroups,
+       },
+       { withCredentials: true }
+     );
+ 
+     if (response.data.status === "success") {
+       setMessage({ text: "User updated successfully!", type: "success" });
+       fetchUsers(); // Refresh users list
+       checkAdminPermission(); // Re-check admin status after update
+     }
+   } catch (error) {
+     console.error("Error updating user:", error);
+     setMessage({
+       text: error.response?.data?.message || "An error occurred during user update",
+       type: "error",
+     });
+   }
+ };
   
   // Create a new group
   const handleCreateGroup = async () => {
