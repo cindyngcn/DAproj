@@ -173,7 +173,7 @@ const createUserController = (req, res) => {
           }
 
           // ✅ Insert multiple groups
-          if (groups && groups.length > 0) {
+          /*if (groups && groups.length > 0) {
             const insertGroupQuery =
               "INSERT INTO user_group (user_group_username, user_group_groupName) VALUES (?, ?)";
             groups.forEach((group) => {
@@ -183,7 +183,24 @@ const createUserController = (req, res) => {
                 }
               });
             });
-          }
+          }*/
+
+            if (groups) {
+              // Handle multiple groups
+              for (let gg of groups) {
+                const insertGroupQuery =
+                  "INSERT INTO user_group (user_group_username, user_group_groupName) VALUES (?, ?)";
+                connection.query(insertGroupQuery, [username, gg], (err) => {
+                  if (err) {
+                    console.error("Error updating group:", err);
+                    return res.status(500).json({
+                      status: "error",
+                      message: "Internal server error",
+                    });
+                  }
+                });
+              }
+            }
 
           res.status(201).json({
             status: "success",

@@ -1,88 +1,116 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { TextField, Button, Table, TableHead, TableBody, TableRow, TableCell, Switch, Select, MenuItem } from "@mui/material";
+import { TextField, Button, Table, TableHead, TableBody, TableRow, TableCell, Select, MenuItem, TableContainer, Paper } from "@mui/material";
 import Divider from "@mui/material/Divider";
 import Header1 from "../components/header1";
 
 export default function Admin() {
-    /*const [users, setUsers] = useState([]);
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [email, setEmail] = useState("");
-    const [group, setGroup] = useState("");
-    const [enabled, setEnabled] = useState(true);
-    const [errorMessage, setErrorMessage] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
-    const [groupInput, setGroupInput] = useState("");
-    const [groups, setGroups] = useState([]);
+    const [applications, setApplications] = useState([]);
+    const [newApp, setNewApp] = useState({
+        app_acronym: "",
+        app_description: "",
+        app_startDate: "",
+        app_endDate: "",
+        app_rNumber: "",
+        App_permit_Create: "",
+        App_permit_Open: "",
+        App_permit_toDoList: "",
+        App_permit_Doing: "",
+        App_permit_Done: ""
+    });
 
-    const navigate = useNavigate();
-
-    const fetchUsers = async () => {
-        const response = await axios.get("http://localhost:8080/user");
-        setUsers(response.data.users);
+    const handleChange = (e) => {
+        setNewApp({ ...newApp, [e.target.name]: e.target.value });
     };
-
-    const fetchGroups = async () => {
-        const response = await axios.get("http://localhost:8080/groups");
-        setGroups(response.data.groups);
-    };
-
-    useEffect(() => {
-        fetchUsers();
-        fetchGroups();
-    }, []);
-
-    const handleCreateUser = async () => {
-        try {
-            const response = await axios.post("http://localhost:8080/createUser", {
-                username,
-                password,
-                email,
-                group,
-                enabled
-            });
-
-            if (response.data.status === "success") {
-                setSuccessMessage("User created successfully!");
-                setUsername("");
-                setPassword("");
-                setEmail("");
-                setGroup("");
-                setEnabled(true);
-                fetchUsers(); // Refresh the user list
-
-                // Create user-group association
-                await axios.post("http://localhost:8080/groups/associate", {
-                    username,
-                    groupName: group
-                });
-            }
-        } catch (error) {
-            setErrorMessage(error.response?.data?.message || "An error occurred during user creation");
-        }
-    };
-
-    const handleCreateGroup = async () => {
-        try {
-            const response = await axios.post("http://localhost:8080/groups", {
-                groupName: groupInput
-            });
-
-            if (response.data.status === "success") {
-                setGroupInput("");
-                fetchGroups(); // Refresh the group list
-            }
-        } catch (error) {
-            setErrorMessage(error.response?.data?.message || "An error occurred during group creation");
-        }
-    };*/
 
     return (
-        <div>
+        <>
             <Header1 />
-            <h1>Applications</h1>
-        </div>
+            <h1 style={{ marginLeft: '20px' }}>Applications</h1>
+            <div style={{ padding: "20px" }}>
+                <Divider />
+                <TableContainer component={Paper} sx={{ maxHeight: "80vh", overflow: "auto" }}>
+                    <Table sx={{ minWidth: 1200 }} stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Acronym</TableCell>
+                                <TableCell>Description</TableCell>
+                                <TableCell>Start Date</TableCell>
+                                <TableCell>End Date</TableCell>
+                                <TableCell>R.Num</TableCell>
+                                <TableCell>Permit Create</TableCell>
+                                <TableCell>Permit Open</TableCell>
+                                <TableCell>Permit To-Do</TableCell>
+                                <TableCell>Permit Doing</TableCell>
+                                <TableCell>Permit Done</TableCell>
+                                <TableCell>Action</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>
+                                    <TextField name="app_acronym" value={newApp.app_acronym} onChange={handleChange} placeholder="Enter acronym" fullWidth />
+                                </TableCell>
+                                <TableCell>
+                                    <TextField name="app_description" value={newApp.app_description} onChange={handleChange} placeholder="Enter description" fullWidth />
+                                </TableCell>
+                                <TableCell>
+                                    <TextField name="app_startDate" type="date" value={newApp.app_startDate} onChange={handleChange} fullWidth />
+                                </TableCell>
+                                <TableCell>
+                                    <TextField name="app_endDate" type="date" value={newApp.app_endDate} onChange={handleChange} fullWidth />
+                                </TableCell>
+                                <TableCell>
+                                    <TextField name="app_rNumber" value={newApp.app_rNumber} onChange={handleChange} placeholder="Enter R number" fullWidth />
+                                </TableCell>
+                                {["App_permit_Create", "App_permit_Open", "App_permit_toDoList", "App_permit_Doing", "App_permit_Done"].map((permit) => (
+                                    <TableCell key={permit}>
+                                        <Select name={permit} value={newApp[permit]} onChange={handleChange} displayEmpty fullWidth>
+                                            <MenuItem value="">Select Group</MenuItem>
+                                            <MenuItem value="admin">Admin</MenuItem>
+                                            <MenuItem value="grp1">Group 1</MenuItem>
+                                            <MenuItem value="grp2">Group 2</MenuItem>
+                                        </Select>
+                                    </TableCell>
+                                ))}
+                                <TableCell>
+                                    <Button variant="contained" color="primary">Create</Button>
+                                </TableCell>
+                            </TableRow>
+                            {applications.map((app) => (
+                                <TableRow key={app.app_acronym}>
+                                    <TableCell>{app.app_acronym}</TableCell>
+                                    <TableCell>
+                                        <TextField name="app_description" defaultValue={app.app_description} fullWidth />
+                                    </TableCell>
+                                    <TableCell>
+                                        <TextField name="app_startDate" type="date" defaultValue={app.app_startDate} fullWidth />
+                                    </TableCell>
+                                    <TableCell>
+                                        <TextField name="app_endDate" type="date" defaultValue={app.app_endDate} fullWidth />
+                                    </TableCell>
+                                    <TableCell>
+                                        <TextField name="app_rNumber" defaultValue={app.app_rNumber} fullWidth />
+                                    </TableCell>
+                                    {["App_permit_Create", "App_permit_Open", "App_permit_toDoList", "App_permit_Doing", "App_permit_Done"].map((permit) => (
+                                        <TableCell key={permit}>
+                                            <Select name={permit} defaultValue={app[permit]} fullWidth>
+                                                <MenuItem value="">Select Group</MenuItem>
+                                                <MenuItem value="admin">Admin</MenuItem>
+                                                <MenuItem value="grp1">Group 1</MenuItem>
+                                                <MenuItem value="grp2">Group 2</MenuItem>
+                                            </Select>
+                                        </TableCell>
+                                    ))}
+                                    <TableCell>
+                                        <Button variant="contained" color="secondary">Update</Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </div>
+        </>
     );
-}
+}    
