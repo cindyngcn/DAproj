@@ -82,7 +82,7 @@ export default function Admin() {
     return (
         <div>
             <Header1 />
-            <h1>HomePage</h1>
+            <h1>Applications</h1>
         </div>
     );
 }
