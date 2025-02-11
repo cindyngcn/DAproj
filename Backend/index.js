@@ -38,6 +38,7 @@ const loginRouter = require('./Routers/loginRouter.js');
 const updateUserRouter = require('./Routers/updateUserRouter.js');
 const updateProfileRouter = require('./Routers/updateProfileRouter.js');
 
+// Over-splitting - e.g. 1 for task, 1 for authentication
 app.use('/createUser', createUserRouter);
 app.use('/groups', groupRouter);
 app.use('/auth', loginRouter);

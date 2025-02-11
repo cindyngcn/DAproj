@@ -107,56 +107,62 @@ const Users = () => {
     fetchGroups();
 
     // Set interval to check admin permission every 5 seconds
-   const interval = setInterval(checkAdminPermission, 5000);
+   const interval = setInterval(checkAdminPermission, 2000);
 
    return () => clearInterval(interval); // Clean up interval on unmount
   }, []);
 
-  // Create a new user
-  const handleCreateUser = async () => {
-
-    // Validate username
-    if (!validateUsername(username)) {
-      setMessage({ text: "Username can only contain letters and numbers (no special characters).", type: "error" });
-      return;
-    }
-
-    // Validate password
-    if (password && !validatePassword(password)) {
-      setMessage({ text: "Password must be 8-10 characters long and include at least one letter, one number, and one special character.", type: "error" });
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        "http://localhost:8080/createUser",
-        { username, password, email, group, enabled },
-        { withCredentials: true }
-      );
-
-      if (response.data.status === "success") {
-        setMessage({ text: "User created successfully!", type: "success" }); // Set success message
-        setUsername("");
-        setPassword("");
-        setEmail("");
-        setGroup("");
-        setEnabled(true);
-        fetchUsers(); // Refresh users list
-      }
-    } catch (error) {
-      setMessage({ text: error.response?.data?.message || "An error occurred during user creation", type: "error" }); // Set error message
-    }
+  const clearForm = () => {
+    setUsername('');
+    setEmail('');
+    setPassword('');
+    setGroup('');
   };
 
-  /*const handleUpdateUser = async (user) => {
-    // Validate password if it is provided
+  const handleCreateUser = async () => {
+    if (password && !validatePassword(password)) {
+      setMessage({ text: "Password must be 8-10 characters long and include a letter, number, and special character.", type: "error" });
+      return;
+    }
+  
+    //let selectedGroups = group || []; // The selected groups should come from the state
+    let selectedGroups = Array.isArray(group) ? group : [group];
+  
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/createUser", // Adjust your backend URL if necessary
+        {
+          username: username, // Get the username from the form input
+          password: password || null,
+          email: email,
+          enabled: enabled,
+          group: selectedGroups, // Array of selected groups
+        },
+        { withCredentials: true }
+      );
+  
+      if (response.data.status === "success") {
+        setMessage({ text: "User created successfully!", type: "success" });
+        clearForm(); // Clear the form after successful user creation
+        fetchUsers(); // Optionally refresh the users list
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      setMessage({
+        text: error.response?.data?.message || "An error occurred during user creation",
+        type: "error",
+      });
+    }
+  };
+  
+
+  const handleUpdateUser = async (user) => {
     if (user.password && !validatePassword(user.password)) {
-      setMessage({ text: "Password must be 8-10 characters long and include at least one letter, one number, and one special character.", type: "error" });
+      setMessage({ text: "Password must be 8-10 characters long and include a letter, number, and special character.", type: "error" });
       return;
     }
   
     let updatedGroups = user.groups || [];
-
   
     try {
       const response = await axios.put(
@@ -165,8 +171,8 @@ const Users = () => {
           username: user.username,
           password: user.password || null,
           email: user.email,
-          enabled: user.enabled, 
-          group: updatedGroups, // Send updated group array
+          enabled: user.enabled,
+          group: updatedGroups,
         },
         { withCredentials: true }
       );
@@ -174,6 +180,7 @@ const Users = () => {
       if (response.data.status === "success") {
         setMessage({ text: "User updated successfully!", type: "success" });
         fetchUsers(); // Refresh users list
+        checkAdminPermission(); // Re-check admin status after update
       }
     } catch (error) {
       console.error("Error updating user:", error);
@@ -182,42 +189,7 @@ const Users = () => {
         type: "error",
       });
     }
-  };*/
- 
-const handleUpdateUser = async (user) => {
-   if (user.password && !validatePassword(user.password)) {
-     setMessage({ text: "Password must be 8-10 characters long and include a letter, number, and special character.", type: "error" });
-     return;
-   }
- 
-   let updatedGroups = user.groups || [];
- 
-   try {
-     const response = await axios.put(
-       "http://localhost:8080/user/update",
-       {
-         username: user.username,
-         password: user.password || null,
-         email: user.email,
-         enabled: user.enabled,
-         group: updatedGroups,
-       },
-       { withCredentials: true }
-     );
- 
-     if (response.data.status === "success") {
-       setMessage({ text: "User updated successfully!", type: "success" });
-       fetchUsers(); // Refresh users list
-       checkAdminPermission(); // Re-check admin status after update
-     }
-   } catch (error) {
-     console.error("Error updating user:", error);
-     setMessage({
-       text: error.response?.data?.message || "An error occurred during user update",
-       type: "error",
-     });
-   }
- };
+  };
   
   // Create a new group
   const handleCreateGroup = async () => {
@@ -297,12 +269,12 @@ const handleUpdateUser = async (user) => {
           <TableRow>
             <TableCell>
               <TextField
-                  label="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  error={username && !validateUsername(username)} // Show error when invalid
-                  helperText={username && !validateUsername(username) ? "Only alphabets and numbers allowed." : ""}
-                />
+                label="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                error={username && !validateUsername(username)} // Show error when invalid
+                helperText={username && !validateUsername(username) ? "Only alphabets and numbers allowed." : ""}
+              />
             </TableCell>
             <TableCell>
               <TextField 
@@ -317,13 +289,20 @@ const handleUpdateUser = async (user) => {
               <TextField value={email} onChange={(e) => setEmail(e.target.value)} />
             </TableCell>
             <TableCell>
-              <Select value={group} onChange={(e) => setGroup(e.target.value)}>
-                {groups.map((grp, index) => (
-                  <MenuItem key={index} value={grp}>
-                    {grp}
-                  </MenuItem>
-                ))}
-              </Select>
+            <Select
+              multiple
+              value={Array.isArray(group) ? group : []}  // Ensure `group` is an array
+              onChange={(e) => setGroup(e.target.value)}  // Update selected groups when changed
+              renderValue={(selected) => selected.join(", ")}  // Display the selected groups
+            >
+              {groups.map((grp, index) => (
+                <MenuItem key={index} value={grp}>
+                  <Checkbox checked={group.includes(grp)} /> {/* Checkbox for each group */}
+                  <ListItemText primary={grp} />
+                </MenuItem>
+              ))}
+            </Select>
+
             </TableCell>
             <TableCell>
               <Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} color="primary" />
