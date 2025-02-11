@@ -136,7 +136,7 @@ const Users = () => {
           password: password || null,
           email: email,
           enabled: enabled,
-          group: selectedGroups, // Array of selected groups
+          groups: selectedGroups, // Array of selected groups
         },
         { withCredentials: true }
       );
