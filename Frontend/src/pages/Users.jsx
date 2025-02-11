@@ -309,7 +309,7 @@ const Users = () => {
               {enabled ? "Enabled" : "Disabled"}
             </TableCell>
             <TableCell>
-              <Button variant="contained" sx={{ backgroundColor: '#6699CC' }} onClick={handleCreateUser}>
+              <Button variant="contained" sx={{ backgroundColor: '#48e1da' }} onClick={handleCreateUser}>
                 Create
               </Button>
             </TableCell>
@@ -379,7 +379,7 @@ const Users = () => {
                   {user.enabled ? "Enabled" : "Disabled"}
                 </TableCell>
                 <TableCell>
-                  <Button variant="contained" sx={{ backgroundColor: '#cf49bf' }} onClick={() => handleUpdateUser(user)}>
+                  <Button variant="contained" sx={{ backgroundColor: '#9743ea' }} onClick={() => handleUpdateUser(user)}>
                     Update
                   </Button>
                 </TableCell>
