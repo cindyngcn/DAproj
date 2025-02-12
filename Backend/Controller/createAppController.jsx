@@ -61,7 +61,7 @@ const createAppController = (req, res) => {
     }
 
     // Check if application already exists
-    const checkAppQuery = "SELECT * FROM application WHERE app_acronym = ?";
+    const checkAppQuery = "SELECT * FROM application WHERE App_Acronym = ?";
     connection.query(checkAppQuery, [App_Acronym], (err, results) => {
       if (err) {
         console.error("Error querying the database:", err);
@@ -72,39 +72,60 @@ const createAppController = (req, res) => {
         return res.status(400).json({ status: "error", message: "Application already exists" });
       }
 
-      // Insert application into `application` table
-      const insertAppQuery = "INSERT INTO application (App_Acronym, App_Description, App_startDate, App_endDate, App_RNumber) VALUES (?, ?, ?, ?, ?)";
-      connection.query(insertAppQuery, [App_Acronym, App_Description, App_startDate, App_endDate, App_RNumber], (err) => {
-        if (err) {
-          console.error("Error inserting application into the database:", err);
-          return res.status(500).json({ status: "error", message: "Internal server error" });
-        }
+      // Log to verify the incoming permissions object
+      console.log("Incoming Permissions:", permissions);
 
-        // Insert permissions for each group (if provided)
-        if (permissions) {
-          Object.keys(permissions).forEach(groupName => {
-            const groupPermissions = permissions[groupName];
-            groupPermissions.forEach(permission => {
-              const insertPermissionQuery =
-                "INSERT INTO application_permissions (App_Acronym, App_RNumber, user_group_groupName, permission) VALUES (?, ?, ?, ?)";
-              connection.query(insertPermissionQuery, [App_Acronym, App_RNumber, groupName, permission], (err) => {
-                if (err) {
-                  console.error("Error inserting permissions for group:", err);
-                  return res.status(500).json({
-                    status: "error",
-                    message: "Internal server error while inserting permissions",
-                  });
-                }
-              });
-            });
+      // Insert application into `application` table, including permissions
+      const insertAppQuery = `
+        INSERT INTO application (
+          App_Acronym, 
+          App_Description, 
+          App_startDate, 
+          App_endDate, 
+          App_RNumber, 
+          App_permit_Create, 
+          App_permit_Open, 
+          App_permit_toDoList, 
+          App_permit_Doing, 
+          App_permit_Done
+        ) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+      // Map permissions object fields correctly
+      const permissionFields = {
+        App_permit_Create: permissions?.App_permit_Create || null,
+        App_permit_Open: permissions?.App_permit_Open || null,
+        App_permit_toDoList: permissions?.App_permit_toDoList || null,
+        App_permit_Doing: permissions?.App_permit_Doing || null,
+        App_permit_Done: permissions?.App_permit_Done || null
+      };
+
+      connection.query(
+        insertAppQuery, 
+        [
+          App_Acronym, 
+          App_Description, 
+          App_startDate, 
+          App_endDate, 
+          App_RNumber, 
+          permissionFields.App_permit_Create, 
+          permissionFields.App_permit_Open, 
+          permissionFields.App_permit_toDoList, 
+          permissionFields.App_permit_Doing, 
+          permissionFields.App_permit_Done
+        ], 
+        (err) => {
+          if (err) {
+            console.error("Error inserting application into the database:", err);
+            return res.status(500).json({ status: "error", message: "Internal server error" });
+          }
+
+          res.status(201).json({
+            status: "success",
+            message: "Application created successfully with permissions.",
           });
         }
-
-        res.status(201).json({
-          status: "success",
-          message: "Application created successfully with permissions.",
-        });
-      });
+      );
     });
   });
 };
