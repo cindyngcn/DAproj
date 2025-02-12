@@ -42,10 +42,10 @@ const createAppController = (req, res) => {
       return res.status(403).json({ status: "error", message: "Invalid or expired token." });
     }
 
-    const { app_acronym, app_description, app_startDate, app_endDate, app_rNumber, permissions } = req.body;
+    const { App_Acronym, App_Description, App_startDate, App_endDate, App_RNumber, permissions } = req.body;
 
     // Validate acronym format
-    if (!isValidAcronym(app_acronym)) {
+    if (!isValidAcronym(App_Acronym)) {
       return res.status(400).json({
         status: "error",
         message: "Acronym must be alphanumeric and up to 20 characters.",
@@ -53,7 +53,7 @@ const createAppController = (req, res) => {
     }
 
     // Validate rNumber format
-    if (!isValidRNumber(app_rNumber)) {
+    if (!isValidRNumber(App_RNumber)) {
       return res.status(400).json({
         status: "error",
         message: "R.Number must start with 0 and be an integer.",
@@ -62,7 +62,7 @@ const createAppController = (req, res) => {
 
     // Check if application already exists
     const checkAppQuery = "SELECT * FROM application WHERE app_acronym = ?";
-    connection.query(checkAppQuery, [app_acronym], (err, results) => {
+    connection.query(checkAppQuery, [App_Acronym], (err, results) => {
       if (err) {
         console.error("Error querying the database:", err);
         return res.status(500).json({ status: "error", message: "Internal server error" });
@@ -73,8 +73,8 @@ const createAppController = (req, res) => {
       }
 
       // Insert application into `application` table
-      const insertAppQuery = "INSERT INTO application (app_acronym, app_description, app_startDate, app_endDate, app_rNumber) VALUES (?, ?, ?, ?, ?)";
-      connection.query(insertAppQuery, [app_acronym, app_description, app_startDate, app_endDate, app_rNumber], (err) => {
+      const insertAppQuery = "INSERT INTO application (App_Acronym, App_Description, App_startDate, App_endDate, App_RNumber) VALUES (?, ?, ?, ?, ?)";
+      connection.query(insertAppQuery, [App_Acronym, App_Description, App_startDate, App_endDate, App_RNumber], (err) => {
         if (err) {
           console.error("Error inserting application into the database:", err);
           return res.status(500).json({ status: "error", message: "Internal server error" });
@@ -86,8 +86,8 @@ const createAppController = (req, res) => {
             const groupPermissions = permissions[groupName];
             groupPermissions.forEach(permission => {
               const insertPermissionQuery =
-                "INSERT INTO application_permissions (app_acronym, app_rNumber, user_group_groupName, permission) VALUES (?, ?, ?, ?)";
-              connection.query(insertPermissionQuery, [app_acronym, app_rNumber, groupName, permission], (err) => {
+                "INSERT INTO application_permissions (App_Acronym, App_RNumber, user_group_groupName, permission) VALUES (?, ?, ?, ?)";
+              connection.query(insertPermissionQuery, [App_Acronym, App_RNumber, groupName, permission], (err) => {
                 if (err) {
                   console.error("Error inserting permissions for group:", err);
                   return res.status(500).json({
