@@ -4,6 +4,6 @@ const updateAppController = require('../Controller/updateAppController.jsx');
 const authMiddleware = require('../middleware/authMiddleware.js'); // Import the middleware
 
 // Protect this route with authMiddleware
-router.put('/', authMiddleware, updateAppController);
+router.put('/:appAcronym', authMiddleware, updateAppController);
 
 module.exports = router;

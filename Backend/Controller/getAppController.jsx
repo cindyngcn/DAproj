@@ -18,9 +18,10 @@ connection.connect((err) => {
   console.log("Connected to the database!");
 });
 
-// Get application logic with token verification
+// Get applications (all or by specific acronym)
 const getAppController = (req, res) => {
   const token = req.cookies.authToken; // Get the token from cookies
+
   if (!token) {
     return res.status(401).json({ status: "error", message: "No token provided. Access denied." });
   }
@@ -30,23 +31,33 @@ const getAppController = (req, res) => {
       return res.status(403).json({ status: "error", message: "Invalid or expired token." });
     }
 
-    const { appAcronym } = req.params; // Getting the App_Acronym from the route params
+    const { appAcronym } = req.params; // Getting the App_Acronym if provided
 
-    // Query to fetch the application
-    const getAppQuery = "SELECT * FROM application WHERE App_Acronym = ?";
-    connection.query(getAppQuery, [appAcronym], (err, results) => {
+    let query;
+    let params = [];
+
+    if (appAcronym) {
+      // If a specific application acronym is requested
+      query = "SELECT * FROM application WHERE App_Acronym = ?";
+      params = [appAcronym];
+    } else {
+      // If no acronym is provided, get all applications
+      query = "SELECT * FROM application";
+    }
+
+    connection.query(query, params, (err, results) => {
       if (err) {
-        console.error("Error fetching application from the database:", err);
+        console.error("Error fetching applications from the database:", err);
         return res.status(500).json({ status: "error", message: "Internal server error" });
       }
 
       if (results.length === 0) {
-        return res.status(404).json({ status: "error", message: "Application not found" });
+        return res.status(404).json({ status: "error", message: "No applications found" });
       }
 
       res.status(200).json({
         status: "success",
-        data: results[0],
+        data: appAcronym ? results[0] : results, // Return a single object if fetching one, or array if fetching all
       });
     });
   });

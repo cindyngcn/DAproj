@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { TextField, Button, Table, TableHead, TableBody, TableRow, TableCell, Select, MenuItem, TableContainer, Paper } from "@mui/material";
-import Divider from "@mui/material/Divider";
+import {
+    TextField, Button, Table, TableHead, TableBody, TableRow, TableCell,
+    Select, MenuItem, Divider
+} from "@mui/material";
 import Header1 from "../components/header1";
 
 export default function Admin() {
-    const [applications, setApplications] = useState([]); // Initialize as empty array
+    const [applications, setApplications] = useState([]);
     const [newApp, setNewApp] = useState({
         App_Acronym: "",
         App_Description: "",
@@ -18,15 +20,18 @@ export default function Admin() {
         App_permit_Doing: "",
         App_permit_Done: ""
     });
-
     const [groups, setGroups] = useState([]);
+
+    useEffect(() => {
+        fetchGroups();
+        fetchApplications();
+    }, []);
 
     const fetchGroups = async () => {
         try {
             const response = await axios.get("http://localhost:8080/groups", { withCredentials: true });
-            console.log("Groups fetched:", response.data);
             if (response.data && response.data.groups) {
-                setGroups(response.data.groups); // Adjust this based on actual response structure
+                setGroups(response.data.groups);
             }
         } catch (error) {
             console.error("Error fetching groups:", error);
@@ -48,45 +53,29 @@ export default function Admin() {
         }
     };
 
-    useEffect(() => {
-        fetchGroups();
-        fetchApplications(); // You can enable this later when you decide to display existing applications
-    }, []);
-
     const handleChange = (e) => {
         setNewApp({ ...newApp, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = () => {
-        const permissions = {
-            App_permit_Create: newApp.App_permit_Create,
-            App_permit_Open: newApp.App_permit_Open,
-            App_permit_toDoList: newApp.App_permit_toDoList,
-            App_permit_Doing: newApp.App_permit_Doing,
-            App_permit_Done: newApp.App_permit_Done
-        };
-    
-        const applicationData = {
-            App_Acronym: newApp.App_Acronym,
-            App_Description: newApp.App_Description,
-            App_startDate: newApp.App_startDate,
-            App_endDate: newApp.App_endDate,
-            App_RNumber: newApp.App_RNumber,
-            permissions: permissions, // Check if this object is correctly populated
-        };
-    
-        console.log("Submitting application data:", applicationData);  // Add this to debug
-    
-        axios.post("http://localhost:8080/createApplication", applicationData, { withCredentials: true })
-            .then(response => {
-                console.log("Application created:", response.data);
-                if (response.data && response.data.newApplication) {
-                    setApplications((prevApps) => [...prevApps, response.data.newApplication]);
-                }
-            })
-            .catch(error => {
-                console.error("Error creating application:", error);
+    const handleSubmit = async () => {
+        try {
+            const response = await axios.post("http://localhost:8080/createApplication", newApp, { withCredentials: true });
+            setApplications([...applications, response.data]);
+            setNewApp({
+                App_Acronym: "",
+                App_Description: "",
+                App_startDate: "",
+                App_endDate: "",
+                App_RNumber: "",
+                App_permit_Create: "",
+                App_permit_Open: "",
+                App_permit_toDoList: "",
+                App_permit_Doing: "",
+                App_permit_Done: ""
             });
+        } catch (error) {
+            console.error("Error creating application:", error);
+        }
     };
 
     return (
