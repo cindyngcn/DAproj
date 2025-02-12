@@ -114,15 +114,30 @@ const createAppController = (req, res) => {
           permissionFields.App_permit_Doing, 
           permissionFields.App_permit_Done
         ], 
-        (err) => {
+        (err, results) => {
           if (err) {
             console.error("Error inserting application into the database:", err);
             return res.status(500).json({ status: "error", message: "Internal server error" });
           }
 
+          // Fetch the newly created application details
+          const newApplication = {
+            App_Acronym,
+            App_Description,
+            App_startDate,
+            App_endDate,
+            App_RNumber,
+            App_permit_Create: permissionFields.App_permit_Create,
+            App_permit_Open: permissionFields.App_permit_Open,
+            App_permit_toDoList: permissionFields.App_permit_toDoList,
+            App_permit_Doing: permissionFields.App_permit_Doing,
+            App_permit_Done: permissionFields.App_permit_Done
+          };
+
+          // Send success response with the new application
           res.status(201).json({
             status: "success",
-            message: "Application created successfully with permissions.",
+            newApplication
           });
         }
       );

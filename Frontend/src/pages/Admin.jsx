@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { TextField, Button, Table, TableHead, TableBody, TableRow, TableCell, Select, MenuItem, TableContainer, Paper } from "@mui/material";
+import { TextField, Button, Table, TableHead, TableBody, TableRow, TableCell, Select, MenuItem, TableContainer, Paper, Alert } from "@mui/material";
 import Divider from "@mui/material/Divider";
 import Header1 from "../components/header1";
 
 export default function Admin() {
-    const [applications, setApplications] = useState([]); // Initialize as empty array
+    const [applications, setApplications] = useState([]);
     const [newApp, setNewApp] = useState({
         App_Acronym: "",
         App_Description: "",
@@ -20,13 +20,13 @@ export default function Admin() {
     });
 
     const [groups, setGroups] = useState([]);
+    const [showSuccess, setShowSuccess] = useState(false); // For controlling the success message visibility
 
     const fetchGroups = async () => {
         try {
             const response = await axios.get("http://localhost:8080/groups", { withCredentials: true });
-            console.log("Groups fetched:", response.data);
             if (response.data && response.data.groups) {
-                setGroups(response.data.groups); // Adjust this based on actual response structure
+                setGroups(response.data.groups);
             }
         } catch (error) {
             console.error("Error fetching groups:", error);
@@ -36,7 +36,6 @@ export default function Admin() {
     const fetchApplications = async () => {
         try {
             const response = await axios.get("http://localhost:8080/getApplication", { withCredentials: true });
-            console.log("Fetched Applications:", response.data);
             if (response.data && Array.isArray(response.data.data)) {
                 setApplications(response.data.data);
             } else {
@@ -50,7 +49,7 @@ export default function Admin() {
 
     useEffect(() => {
         fetchGroups();
-        fetchApplications(); // You can enable this later when you decide to display existing applications
+        fetchApplications();
     }, []);
 
     const handleChange = (e) => {
@@ -72,16 +71,40 @@ export default function Admin() {
             App_startDate: newApp.App_startDate,
             App_endDate: newApp.App_endDate,
             App_RNumber: newApp.App_RNumber,
-            permissions: permissions, // Check if this object is correctly populated
+            permissions: permissions,
         };
     
-        console.log("Submitting application data:", applicationData);  // Add this to debug
-    
+        // In your create application function
         axios.post("http://localhost:8080/createApplication", applicationData, { withCredentials: true })
             .then(response => {
-                console.log("Application created:", response.data);
-                if (response.data && response.data.newApplication) {
+                if (response.data.status === "success") {
+
+                    // Add the newly created application to the state
                     setApplications((prevApps) => [...prevApps, response.data.newApplication]);
+
+                    // Reset the form fields
+                    setNewApp({
+                        App_Acronym: "",
+                        App_Description: "",
+                        App_startDate: "",
+                        App_endDate: "",
+                        App_RNumber: "",
+                        App_permit_Create: "",
+                        App_permit_Open: "",
+                        App_permit_toDoList: "",
+                        App_permit_Doing: "",
+                        App_permit_Done: ""
+                    });
+
+                    // Set the success message state
+                    setShowSuccess(true);
+
+                    // Hide the success message after 2 seconds
+                    setTimeout(() => {
+                        setShowSuccess(false);
+                    }, 2000);
+                } else {
+                    console.error("Error:", response.data.message);
                 }
             })
             .catch(error => {
@@ -89,13 +112,23 @@ export default function Admin() {
             });
     };
 
+    // UseEffect to log the showSuccess state when it changes
+    useEffect(() => {
+    }, [showSuccess]); // Logs every time showSuccess changes
+
     return (
         <>
             <Header1 />
-            <h1 style={{ marginLeft: '20px' }}>Applications</h1>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+                <h1 style={{ marginLeft: '20px' }}>Applications</h1>
+                {showSuccess && (
+                    <Alert severity="success" style={{ marginLeft: '20px', width: 'auto' }}>
+                        Application created successfully
+                    </Alert>
+                )}
+            </div>
             <div style={{ padding: "20px", overflowX: "auto", overflowY: "auto", height: "auto" }}>
                 <Divider />
-                {/* Table without internal scrollbars */}
                 <Table sx={{ width: "100%", tableLayout: "fixed", wordWrap: "break-word" }}>
                     <TableHead>
                         <TableRow>
