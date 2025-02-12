@@ -18,9 +18,10 @@ export default function Admin() {
         App_permit_Doing: "",
         App_permit_Done: ""
     });
-
     const [groups, setGroups] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false); // For controlling the success message visibility
+    const [showError, setShowError] = useState(false); // For controlling the error message visibility
+    const [errorMessage, setErrorMessage] = useState("");
 
     const fetchGroups = async () => {
         try {
@@ -57,6 +58,24 @@ export default function Admin() {
     };
 
     const handleSubmit = () => {
+        // Validate App_Acronym (alphanumeric, max length 20)
+        const acronymRegex = /^[a-zA-Z0-9]+$/;
+        if (!newApp.App_Acronym || newApp.App_Acronym.length > 20 || !acronymRegex.test(newApp.App_Acronym)) {
+            setErrorMessage("Acronym must be alphanumeric and cannot exceed 20 characters.");
+            setShowError(true);
+            setTimeout(() => setShowError(false), 2000);
+            return;
+        }
+
+        // Validate App_RNumber (should be a number and not exceed the integer limit)
+        const rNumber = Number(newApp.App_RNumber);
+        if (!newApp.App_RNumber || isNaN(rNumber) || rNumber > Number.MAX_SAFE_INTEGER) {
+            setErrorMessage("RNumber exceeds the limit of a valid integer.");
+            setShowError(true);
+            setTimeout(() => setShowError(false), 2000);
+            return;
+        }
+
         const permissions = {
             App_permit_Create: newApp.App_permit_Create,
             App_permit_Open: newApp.App_permit_Open,
@@ -64,7 +83,7 @@ export default function Admin() {
             App_permit_Doing: newApp.App_permit_Doing,
             App_permit_Done: newApp.App_permit_Done
         };
-    
+
         const applicationData = {
             App_Acronym: newApp.App_Acronym,
             App_Description: newApp.App_Description,
@@ -73,11 +92,12 @@ export default function Admin() {
             App_RNumber: newApp.App_RNumber,
             permissions: permissions,
         };
-    
-        // In your create application function
+
         axios.post("http://localhost:8080/createApplication", applicationData, { withCredentials: true })
             .then(response => {
                 if (response.data.status === "success") {
+                    // Log to see the state update flow
+                    console.log("Success response received:", response.data);
 
                     // Add the newly created application to the state
                     setApplications((prevApps) => [...prevApps, response.data.newApplication]);
@@ -112,10 +132,6 @@ export default function Admin() {
             });
     };
 
-    // UseEffect to log the showSuccess state when it changes
-    useEffect(() => {
-    }, [showSuccess]); // Logs every time showSuccess changes
-
     return (
         <>
             <Header1 />
@@ -124,6 +140,11 @@ export default function Admin() {
                 {showSuccess && (
                     <Alert severity="success" style={{ marginLeft: '20px', width: 'auto' }}>
                         Application created successfully
+                    </Alert>
+                )}
+                {showError && (
+                    <Alert severity="error" style={{ marginLeft: '20px', width: 'auto' }}>
+                        {errorMessage}
                     </Alert>
                 )}
             </div>

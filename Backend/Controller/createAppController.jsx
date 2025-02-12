@@ -24,11 +24,12 @@ const isValidAcronym = (acronym) => {
   return acronymRegex.test(acronym);
 };
 
-// Function to validate rNumber format (start with 0, integer)
+// Function to validate rNumber format (can start with any digit, integer)
 const isValidRNumber = (rNumber) => {
-  const rNumberRegex = /^0\d*$/; // Start with 0, followed by digits
+  const rNumberRegex = /^\d+$/; // Allow any number, including starting with 0
   return rNumberRegex.test(rNumber) && Number.isInteger(Number(rNumber));
 };
+
 
 // Create application logic (with multiple permissions for groups)
 const createAppController = (req, res) => {
