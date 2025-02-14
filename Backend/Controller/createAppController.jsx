@@ -43,7 +43,8 @@ const createAppController = (req, res) => {
       return res.status(403).json({ status: "error", message: "Invalid or expired token." });
     }
 
-    const { App_Acronym, App_Description, App_startDate, App_endDate, App_RNumber, permissions } = req.body;
+    const { App_Acronym, App_Description, App_startDate, App_endDate, App_RNumber, App_permit_Create, App_permit_Open, App_permit_toDoList, App_permit_Doing, App_permit_Done } = req.body;
+    console.log("request body:",req.body);
 
     // Validate acronym format
     if (!isValidAcronym(App_Acronym)) {
@@ -74,7 +75,7 @@ const createAppController = (req, res) => {
       }
 
       // Log to verify the incoming permissions object
-      console.log("Incoming Permissions:", permissions);
+      //console.log("Incoming Permissions:", permissions);
 
       // Insert application into `application` table, including permissions
       const insertAppQuery = `
@@ -94,11 +95,11 @@ const createAppController = (req, res) => {
 
       // Map permissions object fields correctly
       const permissionFields = {
-        App_permit_Create: permissions?.App_permit_Create || null,
-        App_permit_Open: permissions?.App_permit_Open || null,
-        App_permit_toDoList: permissions?.App_permit_toDoList || null,
-        App_permit_Doing: permissions?.App_permit_Doing || null,
-        App_permit_Done: permissions?.App_permit_Done || null
+        App_permit_Create: App_permit_Create || null,
+        App_permit_Open: App_permit_Open || null,
+        App_permit_toDoList: App_permit_toDoList || null,
+        App_permit_Doing: App_permit_Doing || null,
+        App_permit_Done: App_permit_Done || null
       };
 
       connection.query(

@@ -54,21 +54,12 @@ const updateAppController = (req, res) => {
       }
 
       // Prepare the update fields (app description, dates, permissions)
-      /*const permissionFields = {
+      const permissionFields = {
         App_permit_Create: permissions?.App_permit_Create || null,
         App_permit_Open: permissions?.App_permit_Open || null,
         App_permit_toDoList: permissions?.App_permit_toDoList || null,
         App_permit_Doing: permissions?.App_permit_Doing || null,
         App_permit_Done: permissions?.App_permit_Done || null
-      };*/
-
-      // Prepare the update fields (app description, dates, permissions)
-      const permissionFields = {
-        App_permit_Create: permissions?.App_permit_Create ?? null,
-        App_permit_Open: permissions?.App_permit_Open ?? null,
-        App_permit_toDoList: permissions?.App_permit_toDoList ?? null,
-        App_permit_Doing: permissions?.App_permit_Doing ?? null,
-        App_permit_Done: permissions?.App_permit_Done ?? null
       };
 
       // Log the SQL query and parameters

@@ -75,7 +75,28 @@ export default function Admin() {
     }));
   };
 
- /*const handleUpdateSubmit = (app) => {
+  const handleCreateSubmit = () => {
+    axios.post("http://localhost:8080/createApplication", newApp, { withCredentials: true })
+      .then((response) => {
+        if (response.data.status === "success") {
+          setApplications([newApp, ...applications]); // Add new app to the table
+          setNewApp({});
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 2000);
+        } else {
+          setErrorMessage("Error creating application.");
+          setShowError(true);
+          setTimeout(() => setShowError(false), 2000);
+        }
+      })
+      .catch((error) => {
+        setErrorMessage("Error creating application.");
+        setShowError(true);
+        setTimeout(() => setShowError(false), 2000);
+      });
+  };
+  
+  const handleUpdateSubmit = (app) => {
     const updatedApp = updatedApps[app.App_Acronym] || {};
     const fieldsToUpdate = {};
 
@@ -91,8 +112,7 @@ export default function Admin() {
           ...fieldsToUpdate,
         };
 
-      //console.log('Updated Application Data:', applicationData); // Log the data sent in the request
-      console.log("Updated Application Data:", updatedApps[app.App_Acronym]);
+      console.log('Updated Application Data:', applicationData); // Log the data sent in the request
 
       axios.put(`http://localhost:8080/updateApplication/${app.App_Acronym}`, applicationData, { withCredentials: true })
         .then((response) => {
@@ -121,70 +141,6 @@ export default function Admin() {
           setTimeout(() => setShowError(false), 2000);
         });
     }
-  };*/
-
-  const handleUpdateSubmit = (app) => {
-    const updatedApp = updatedApps[app.App_Acronym] || {};
-    const fieldsToUpdate = {};
-  
-    // Collect only the changed fields
-    for (let key in updatedApp) {
-      if (updatedApp[key] !== app[key] && key !== 'App_Acronym') { // Exclude App_Acronym
-        fieldsToUpdate[key] = updatedApp[key];
-      }
-    }
-  
-    if (Object.keys(fieldsToUpdate).length > 0) {
-      console.log("Updated Application Data:", fieldsToUpdate);
-  
-      axios.put(`http://localhost:8080/updateApplication/${app.App_Acronym}`, fieldsToUpdate, { withCredentials: true })
-        .then((response) => {
-          if (response.data.status === "success") {
-            setApplications((prevApps) =>
-              prevApps.map((item) =>
-                item.App_Acronym === app.App_Acronym ? { ...item, ...fieldsToUpdate } : item
-              )
-            );
-            setUpdatedApps((prev) => {
-              const { [app.App_Acronym]: removed, ...rest } = prev; // Remove updated app from state
-              return rest;
-            });
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 2000);
-          } else {
-            setErrorMessage("Error updating application.");
-            setShowError(true);
-            setTimeout(() => setShowError(false), 2000);
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error.response?.data || error);
-          setErrorMessage("Error updating application.");
-          setShowError(true);
-          setTimeout(() => setShowError(false), 2000);
-        });
-    }
-  };  
-
-  const handleCreateSubmit = () => {
-    axios.post("http://localhost:8080/createApplication", newApp, { withCredentials: true })
-      .then((response) => {
-        if (response.data.status === "success") {
-          setApplications([newApp, ...applications]); // Add new app to the table
-          setNewApp({});
-          setShowSuccess(true);
-          setTimeout(() => setShowSuccess(false), 2000);
-        } else {
-          setErrorMessage("Error creating application.");
-          setShowError(true);
-          setTimeout(() => setShowError(false), 2000);
-        }
-      })
-      .catch((error) => {
-        setErrorMessage("Error creating application.");
-        setShowError(true);
-        setTimeout(() => setShowError(false), 2000);
-      });
   };
 
   const handleEditClick = (app) => {
@@ -203,7 +159,7 @@ export default function Admin() {
         <h1 style={{ marginLeft: '20px' }}>Applications</h1>
         {showSuccess && (
           <Alert severity="success" style={{ marginLeft: '20px', width: 'auto' }}>
-            Application updated successfully
+            Application created successfully
           </Alert>
         )}
         {showError && (
