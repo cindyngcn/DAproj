@@ -16,6 +16,7 @@ import {
   Divider,
 } from "@mui/material";
 import Header1 from "../components/header1";
+import { Link } from "react-router-dom";
 
 export default function Admin() {
   const [applications, setApplications] = useState([]);
@@ -313,7 +314,11 @@ export default function Admin() {
               </TableRow>
               {applications.map((app) => (
                 <TableRow key={app.App_Acronym}>
-                  <TableCell>{app.App_Acronym}</TableCell>
+                  <TableCell>
+                    <Link to={`/tasks/${app.App_Acronym}`} style={{ textDecoration: "none", color: "blue" }}>
+                      {app.App_Acronym}
+                    </Link>
+                  </TableCell>
                   <TableCell>
                     <TextField
                       name="App_Description"
