@@ -40,6 +40,7 @@ const updateProfileRouter = require('./Routers/updateProfileRouter.js');
 const createAppRouter = require("./Routers/createAppRouter.js");
 const getAppRouter = require("./Routers/getAppRouter.js");
 const updateAppRouter = require("./Routers/updateAppRouter.js");
+const createPlanRouter = require('./Routers/createPlanRouter.js');
 
 // Over-splitting - e.g. 1 for task, 1 for authentication
 app.use('/createUser', createUserRouter);
@@ -50,6 +51,7 @@ app.use('/profile', updateProfileRouter);
 app.use('/createApplication', createAppRouter);
 app.use('/getApplication', getAppRouter);
 app.use('/updateApplication', updateAppRouter);
+app.use('/createPlan', createPlanRouter);
 
 // Fetch all users and their groups
 /*app.get('/user', (req, res) => {

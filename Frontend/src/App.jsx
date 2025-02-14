@@ -8,6 +8,7 @@ import Admin from "./pages/Admin";
 import ProfilePage from "./pages/ProfilePage";
 import ProtectedRoutes from './utils/ProtectedRoutes';
 import Tasks from "./pages/Tasks";
+import CreateTasks from "./pages/createTasks";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/ProfilePage" element={<ProfilePage />} />
         <Route path="/tasks/:appAcronym" element={<Tasks />} />
+        <Route path="/createTask/:appAcronym" element={<CreateTasks />} />
       </Route>
     </Routes>
   );
