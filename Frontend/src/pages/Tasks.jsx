@@ -33,27 +33,6 @@ export default function Tasks() {
     fetchPlanColor();
   }, [appAcronym]); // Runs only when appAcronym changes
 
-  // Handle plan creation
-  /*const handleCreatePlan = async () => {
-    try {
-      const response = await axios.post(
-        `http://localhost:8080/createPlan/${appAcronym}`, // Backend API for creating plan
-        {
-          Plan_MVP_Name: planMVPName,
-          Plan_startDate: startDate,
-          Plan_endDate: endDate,
-          Plan_color: planColor, // This can be either provided or auto-generated
-        },
-        { withCredentials: true } // Include cookies for authentication
-      );
-      console.log('Plan created:', response.data);
-      alert('Plan created successfully!');
-    } catch (error) {
-      console.error('Error creating plan:', error);
-      alert('Failed to create plan!');
-    }
-  };*/
-
   const handleCreatePlan = async () => {
     try {
       const planData = {
