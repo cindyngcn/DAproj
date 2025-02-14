@@ -8,7 +8,7 @@ export default function Tasks() {
   return (
     <>
       <Header1 />
-      <h1>Task Board - {appAcronym}</h1>
+      <h1 style={{ marginLeft: '20px' }}>Task Board - {appAcronym}</h1>
     </>
   );
 }
