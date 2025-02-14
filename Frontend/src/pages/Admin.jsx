@@ -22,8 +22,12 @@ export default function Admin() {
   const [newApp, setNewApp] = useState({}); // For creating new apps
   const [updatedApps, setUpdatedApps] = useState({}); // For updating individual apps
   const [groups, setGroups] = useState([]);
-  const [showSuccess, setShowSuccess] = useState(false);
+  //const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
+  //const [errorMessage, setErrorMessage] = useState("");
+
+  const [showCreateSuccess, setShowCreateSuccess] = useState(false);
+  const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const fetchGroups = async () => {
@@ -81,8 +85,8 @@ export default function Admin() {
         if (response.data.status === "success") {
           setApplications([newApp, ...applications]); // Add new app to the table
           setNewApp({});
-          setShowSuccess(true);
-          setTimeout(() => setShowSuccess(false), 2000);
+          setShowCreateSuccess(true);
+          setTimeout(() => setShowCreateSuccess(false), 2000);
         } else {
           setErrorMessage("Error creating application.");
           setShowError(true);
@@ -99,21 +103,16 @@ export default function Admin() {
   const handleUpdateSubmit = (app) => {
     const updatedApp = updatedApps[app.App_Acronym] || {};
     const fieldsToUpdate = {};
-
-    //making some changes here
+  
     for (let key in updatedApp) {
-        if (updatedApp[key] !== app[key] && key !== 'App_Acronym') { // Exclude App_Acronym from updates
-          fieldsToUpdate[key] = updatedApp[key];
-        }
+      if (updatedApp[key] !== app[key] && key !== 'App_Acronym') { // Exclude App_Acronym from updates
+        fieldsToUpdate[key] = updatedApp[key];
       }
-
-      if (Object.keys(fieldsToUpdate).length > 0) {
-        const applicationData = {
-          ...fieldsToUpdate,
-        };
-
-      console.log('Updated Application Data:', applicationData); // Log the data sent in the request
-
+    }
+  
+    if (Object.keys(fieldsToUpdate).length > 0) {
+      const applicationData = { ...fieldsToUpdate };
+  
       axios.put(`http://localhost:8080/updateApplication/${app.App_Acronym}`, applicationData, { withCredentials: true })
         .then((response) => {
           if (response.data.status === "success") {
@@ -123,11 +122,11 @@ export default function Admin() {
               )
             );
             setUpdatedApps((prev) => {
-              const { [app.App_Acronym]: removed, ...rest } = prev; // Remove updated app from state
+              const { [app.App_Acronym]: removed, ...rest } = prev;
               return rest;
             });
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 2000);
+            setShowUpdateSuccess(true);
+            setTimeout(() => setShowUpdateSuccess(false), 2000);
           } else {
             setErrorMessage("Error updating application.");
             setShowError(true);
@@ -135,7 +134,7 @@ export default function Admin() {
           }
         })
         .catch((error) => {
-          console.error("Error:", error.response?.data || error); // Log the response from the server
+          console.error("Error:", error.response?.data || error);
           setErrorMessage("Error updating application.");
           setShowError(true);
           setTimeout(() => setShowError(false), 2000);
@@ -157,11 +156,18 @@ export default function Admin() {
       <Header1 />
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <h1 style={{ marginLeft: '20px' }}>Applications</h1>
-        {showSuccess && (
+        {showCreateSuccess && (
           <Alert severity="success" style={{ marginLeft: '20px', width: 'auto' }}>
-            Application created successfully
+            Application created successfully!
           </Alert>
         )}
+
+        {showUpdateSuccess && (
+          <Alert severity="success" style={{ marginLeft: '20px', width: 'auto' }}>
+            Application updated successfully!
+          </Alert>
+        )}
+
         {showError && (
           <Alert severity="error" style={{ marginLeft: '20px', width: 'auto' }}>
             {errorMessage}
