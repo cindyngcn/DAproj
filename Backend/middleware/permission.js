@@ -83,5 +83,29 @@ const adminMiddleware = async (req, res, next) => {
 
 };
 
-module.exports = { adminMiddleware, checkGroup };
+// Middleware to check if a user belongs to the "PL" group
+const plMiddleware = async (req, res, next) => {
+  const token = req.cookies.authToken; // Get the token from cookies
+
+  if (!token) {
+    return res.status(401).json({ status: "error", message: "No token provided. Access denied." });
+  }
+
+  try {
+    // Check if the user is in the "PL" group
+    const isPL = await checkGroup(req.user, "PL");
+
+    if (isPL) {
+      next(); // Proceed to the next middleware or route handler
+    } else {
+      return res.status(403).json({ status: "error", message: "Access denied. You are not in the PL group." });
+    }
+  } catch (error) {
+    console.error('Error checking PL group:', error);
+
+    return res.status(500).json({ status: "error", message: "Internal server error." });
+  }
+};
+
+module.exports = { adminMiddleware, plMiddleware, checkGroup };
 
