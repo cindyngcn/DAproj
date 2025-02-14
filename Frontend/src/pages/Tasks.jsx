@@ -95,7 +95,7 @@ export default function Tasks() {
         
         <TextField
             name="Plan_MVP_Name"
-            label="MVP Name"
+            label="Plan Name"
             value={planMVPName}
             onChange={(e) => setPlanMVPName(e.target.value)}
             style={{ marginLeft: '10px', marginBottom: '10px' }}
