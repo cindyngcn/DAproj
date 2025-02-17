@@ -201,8 +201,8 @@ export default function Tasks() {
             justifyContent: "center",
             gap: "20px",
             padding: "20px",
-            maxWidth: "90vw", // Keeps board within screen width
-            margin: "auto", // Centers the board
+            maxWidth: "90vw",
+            margin: "auto",
           }}
         >
           {taskStates.map((state) => (
@@ -210,9 +210,9 @@ export default function Tasks() {
               key={state}
               className="kanban-column"
               style={{
-                flex: 1, // Makes columns flexible to fit available space
-                minWidth: "220px", // Ensures a minimum width per column
-                maxWidth: "300px", // Prevents columns from getting too wide
+                flex: 1,
+                minWidth: "220px",
+                maxWidth: "300px",
                 background: "#f4f4f4",
                 borderRadius: "10px",
                 padding: "15px",
@@ -234,16 +234,57 @@ export default function Tasks() {
                     boxShadow: `0px 0px 10px ${task.planColor}`,
                     transition: "transform 0.2s ease-in-out",
                     cursor: "pointer",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    position: "relative",
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
                   onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1.0)"}
                 >
-                  {task.Task_name}
+                  {/* Task_plan at the top left corner */}
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: "5px",
+                      left: "10px",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      color: "#555",
+                    }}
+                  >
+                    {task.Task_plan}
+                  </span>
+
+                  {/* Task_name bolded and centered */}
+                  <span
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: "16px",
+                      textAlign: "center",
+                      marginTop: "10px",
+                    }}
+                  >
+                    {task.Task_name}
+                  </span>
+
+                  {/* Task_id centered below Task_name */}
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      color: "#666",
+                      textAlign: "center",
+                      marginTop: "5px",
+                    }}
+                  >
+                    {task.Task_id}
+                  </span>
                 </div>
               ))}
             </div>
           ))}
         </div>
+
     </>
   );
 }
