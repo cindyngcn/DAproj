@@ -80,7 +80,7 @@ export default function Tasks() {
         const taskResponse = await axios.get(`http://localhost:8080/getTask/${appAcronym}`, { withCredentials: true });
         
         console.log("Task API Response:", taskResponse.data); // Ensure Task_plan is present
-        
+
         if (taskResponse.data.status === 'success') {
           const tasks = taskResponse.data.tasks;
   
@@ -185,33 +185,65 @@ export default function Tasks() {
       </div>
 
       {/* Create Task Button */}
-      <Link to={`/createTask/${appAcronym}`}>
-        <button>Create Task</button>
-      </Link>
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <Link to={`/createTask/${appAcronym}`} style={{ textDecoration: 'none' }}>
+            <Button variant="contained" style={{ backgroundColor: '#007bff', color: 'white', padding: '10px 20px', fontSize: '16px', borderRadius: '8px', boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)' }}>
+              + Create Task
+            </Button>
+          </Link>
+        </div>
+  
+        {/* Kanban Board */}
+        <div
+          className="kanban-board"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "20px",
+            padding: "20px",
+            maxWidth: "90vw", // Keeps board within screen width
+            margin: "auto", // Centers the board
+          }}
+        >
+          {taskStates.map((state) => (
+            <div
+              key={state}
+              className="kanban-column"
+              style={{
+                flex: 1, // Makes columns flexible to fit available space
+                minWidth: "220px", // Ensures a minimum width per column
+                maxWidth: "300px", // Prevents columns from getting too wide
+                background: "#f4f4f4",
+                borderRadius: "10px",
+                padding: "15px",
+                boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+              }}
+            >
+              <h2 style={{ textAlign: "center" }}>{state}</h2>
 
-      {/* Kanban Board Placeholder */}
-      <div className="kanban-board" style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-        {taskStates.map((state) => (
-          <div key={state} className="kanban-column" style={{ border: "1px solid black", padding: "10px", minWidth: "200px" }}>
-            <h2>{state}</h2>
-            {/* Render tasks with their individual plan colors */}
-            {tasks.filter(task => task.Task_state === state).map((task) => {
-              console.log(`Rendering task: ${task.Task_name}, Plan Color: ${task.planColor}`); // Log the task's name and plan color
-
-              // Implicit return for JSX
-              return (
+              {/* Render tasks */}
+              {tasks.filter(task => task.Task_state === state).map((task) => (
                 <div
                   key={task.Task_id}
                   className="kanban-card"
-                  style={{ background: task.planColor, padding: "10px", marginBottom: "10px" }} // Use task's planColor
+                  style={{
+                    border: `2px solid ${task.planColor}`,
+                    padding: "12px",
+                    marginBottom: "12px",
+                    borderRadius: "8px",
+                    boxShadow: `0px 0px 10px ${task.planColor}`,
+                    transition: "transform 0.2s ease-in-out",
+                    cursor: "pointer",
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1.0)"}
                 >
                   {task.Task_name}
                 </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+              ))}
+            </div>
+          ))}
+        </div>
     </>
   );
 }
