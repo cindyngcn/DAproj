@@ -18,42 +18,6 @@ connection.connect((err) => {
   console.log("Connected to the database!");
 });
 
-// Get plan details (by application acronym)
-/*const getPlanDetailsController = (req, res) => {
-  const token = req.cookies.authToken; // Get the token from cookies
-
-  if (!token) {
-    return res.status(401).json({ status: "error", message: "No token provided. Access denied." });
-  }
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ status: "error", message: "Invalid or expired token." });
-    }
-
-    const { appAcronym } = req.params; // Getting the appAcronym from URL parameters
-
-    const getPlanQuery = "SELECT Plan_color FROM plan WHERE Plan_app_Acronym = ?";
-
-    connection.query(getPlanQuery, [appAcronym], (err, results) => {
-      if (err) {
-        console.error("Error fetching plan details:", err);
-        return res.status(500).json({ status: "error", message: "Internal server error" });
-      }
-
-      if (results.length === 0) {
-        return res.status(404).json({ status: "error", message: "No plan found for this application" });
-      }
-
-      // Send back the plan color for the application
-      res.status(200).json({
-        status: "success",
-        planColor: results[0].Plan_color,
-      });
-    });
-  });
-};*/
-
 const getPlanDetailsController = (req, res) => {
     const token = req.cookies.authToken; // Get the token from cookies
   

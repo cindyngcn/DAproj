@@ -42,6 +42,8 @@ const getAppRouter = require("./Routers/getAppRouter.js");
 const updateAppRouter = require("./Routers/updateAppRouter.js");
 const createPlanRouter = require('./Routers/createPlanRouter.js');
 const getPlanRouter = require('./Routers/getPlanRouter.js');
+const createTaskRouter = require('./Routers/createTaskRouter.js');
+const getTaskRouter = require('./Routers/getTaskRouter.js');
 
 // Over-splitting - e.g. 1 for task, 1 for authentication
 app.use('/createUser', createUserRouter);
@@ -54,44 +56,8 @@ app.use('/getApplication', getAppRouter);
 app.use('/updateApplication', updateAppRouter);
 app.use('/createPlan', createPlanRouter);
 app.use('/getPlanColor', getPlanRouter);
-
-// Fetch all users and their groups
-/*app.get('/user', (req, res) => {
-  const token = req.cookies.authToken;  // Ensure correct cookie name
-
-  if (!token) {
-    return res.status(401).json({ status: 'error', message: 'No token provided. Access denied.' });
-  }
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ status: 'error', message: 'Invalid or expired token.' });
-    }
-
-    // Fetch users and their groups
-    const query = `
-      SELECT u.username, u.email, u.enabled, ug.user_group_groupName AS groupName
-      FROM user u
-      LEFT JOIN user_group ug ON u.username = ug.user_group_username
-    `;
-    
-    connection.query(query, (err, results) => {
-      if (err) {
-        console.error('Error fetching users:', err);
-        return res.status(500).json({ status: "error", message: "Failed to fetch users" });
-      }
-
-      const users = results.map(result => ({
-        username: result.username,
-        email: result.email,
-        enabled: result.enabled,
-        group: [result.groupName] || null,  // Add groupName if available, else null
-      }));
-
-      res.json({ users }); // Send users to frontend
-    });
-  });
-});*/
+app.use('/createTask', createTaskRouter);
+app.use('/getTask', getTaskRouter);
 
 app.get('/user', (req, res) => {
   const token = req.cookies.authToken;  // Ensure correct cookie name
