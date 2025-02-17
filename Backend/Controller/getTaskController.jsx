@@ -48,6 +48,16 @@ const getTaskDetailsController = (req, res) => {
         return res.status(404).json({ status: "error", message: "No tasks found for this application" });
       }
 
+      // Convert Task_createDate from UTC to Singapore Time (SGT)
+      results.forEach((task) => {
+        const utcDate = new Date(task.Task_createDate); // Convert string to Date object
+        // Adjust for Singapore Time (UTC +8)
+        const singaporeTime = utcDate.toLocaleString("en-SG", { timeZone: "Asia/Singapore" });
+
+        // Update the Task_createDate field in the task object
+        task.Task_createDate = singaporeTime;
+      });
+
       // Send back the task details
       res.status(200).json({
         status: "success",
