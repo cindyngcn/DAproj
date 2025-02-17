@@ -15,41 +15,6 @@ export default function Tasks() {
 
   const taskStates = ["OPEN", "TO-DO", "DOING", "DONE", "CLOSED"];
 
-  /*useEffect(() => {
-    const fetchTasksAndColors = async () => {
-      try {
-        // Fetch tasks for the current appAcronym
-        const taskResponse = await axios.get(`http://localhost:8080/getTask/${appAcronym}`, { withCredentials: true });
-
-        if (taskResponse.data.status === 'success') {
-          const tasks = taskResponse.data.tasks;
-
-          // For each task, fetch the corresponding plan color if Task_plan exists
-          const tasksWithColors = await Promise.all(
-            tasks.map(async (task) => {
-              if (task.Task_plan) { // Check if Task_plan is defined
-                const planResponse = await axios.get(`http://localhost:8080/getPlanColor/${appAcronym}`, { withCredentials: true });
-                console.log("Plan Response:", planResponse.data); // Log the full response
-                const planColor = planResponse.data.status === 'success' ? planResponse.data.planColor : '#d13434'; // Default to a color if no planColor found
-                return { ...task, planColor }; // Add color to the task
-              } else {
-                return { ...task, planColor: '#d13434' }; // Default color if no Task_plan
-              }
-            })
-          );
-
-          setTasks(tasksWithColors); // Set the tasks with their associated plan colors
-        } else {
-          console.error('Error fetching tasks:', taskResponse.data.message);
-        }
-      } catch (error) {
-        console.error('Error fetching tasks and plan colors:', error);
-      }
-    };
-
-    fetchTasksAndColors();
-  }, [appAcronym]);*/ 
-
   const handleCreatePlan = async () => {
     try {
       const planData = {
@@ -222,65 +187,70 @@ export default function Tasks() {
               <h2 style={{ textAlign: "center" }}>{state}</h2>
 
               {/* Render tasks */}
-              {tasks.filter(task => task.Task_state === state).map((task) => (
-                <div
-                  key={task.Task_id}
-                  className="kanban-card"
-                  style={{
-                    border: `2px solid ${task.planColor}`,
-                    padding: "12px",
-                    marginBottom: "12px",
-                    borderRadius: "8px",
-                    boxShadow: `0px 0px 10px ${task.planColor}`,
-                    transition: "transform 0.2s ease-in-out",
-                    cursor: "pointer",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    position: "relative",
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1.0)"}
-                >
-                  {/* Task_plan at the top left corner */}
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: "5px",
-                      left: "10px",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                      color: "#555",
-                    }}
-                  >
-                    {task.Task_plan}
-                  </span>
+              {tasks.filter(task => task.Task_state === state).map((task) => {
+                const displayPlan = task.Task_plan ? task.Task_plan : "..."; // Show "..." if Task_plan is missing
+                const borderColor = task.planColor || "#6e7f7e"; // Use planColor or default gray
 
-                  {/* Task_name bolded and centered */}
-                  <span
+                return (
+                  <div
+                    key={task.Task_id}
+                    className="kanban-card"
                     style={{
-                      fontWeight: "bold",
-                      fontSize: "16px",
-                      textAlign: "center",
-                      marginTop: "10px",
+                      border: `2px solid ${borderColor}`,
+                      padding: "12px",
+                      marginBottom: "12px",
+                      borderRadius: "8px",
+                      boxShadow: `0px 0px 10px ${borderColor}`,
+                      transition: "transform 0.2s ease-in-out",
+                      cursor: "pointer",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      position: "relative",
                     }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1.0)"}
                   >
-                    {task.Task_name}
-                  </span>
+                    {/* Task_plan at the top left corner */}
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: "5px",
+                        left: "10px",
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        color: "#555",
+                      }}
+                    >
+                      {displayPlan}
+                    </span>
 
-                  {/* Task_id centered below Task_name */}
-                  <span
-                    style={{
-                      fontSize: "14px",
-                      color: "#666",
-                      textAlign: "center",
-                      marginTop: "5px",
-                    }}
-                  >
-                    {task.Task_id}
-                  </span>
-                </div>
-              ))}
+                    {/* Task_name bolded and centered */}
+                    <span
+                      style={{
+                        fontWeight: "bold",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        marginTop: "10px",
+                      }}
+                    >
+                      {task.Task_name}
+                    </span>
+
+                    {/* Task_id centered below Task_name */}
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        color: "#666",
+                        textAlign: "center",
+                        marginTop: "5px",
+                      }}
+                    >
+                      {task.Task_id}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>

@@ -48,7 +48,7 @@ const createTaskController = (req, res) => {
 
       const App_RNumber = appResults[0].App_RNumber;
 
-      // Step 1: Fetch the highest Task_id for the given App_Acronym
+      // Fetch the highest Task_id for the given App_Acronym
       const getLastTaskQuery = "SELECT Task_id FROM task WHERE Task_app_Acronym = ? ORDER BY Task_id DESC LIMIT 1";
       connection.query(getLastTaskQuery, [Task_app_Acronym], (err, taskResults) => {
         if (err) {
@@ -56,8 +56,8 @@ const createTaskController = (req, res) => {
           return res.status(500).json({ status: "error", message: "Internal server error" });
         }
 
-        // Step 2: Generate the new Task_id based on the App_RNumber
-        let newTaskId = `${Task_app_Acronym}_${App_RNumber}`; // Default to App_RNumber if no task exists
+        // Generate the new Task_id based on the App_RNumber
+        let newTaskId = `${Task_app_Acronym}_${App_RNumber}`;
         let nextTaskNumber = App_RNumber;
 
         if (taskResults.length > 0) {
@@ -67,29 +67,53 @@ const createTaskController = (req, res) => {
           newTaskId = `${Task_app_Acronym}_${nextTaskNumber}`;
         }
 
-        // Step 3: Insert the new task with the generated Task_id
-        const insertTaskQuery = "INSERT INTO task (Task_id, Task_name, Task_description, Task_notes, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        connection.query(insertTaskQuery, [newTaskId, Task_name, Task_description, Task_notes, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate], (err) => {
-          if (err) {
-            console.error("Error inserting task into database:", err);
-            return res.status(500).json({ status: "error", message: "Internal server error" });
-          }
-
-          // Step 4: Increment the App_RNumber for the next task
-          const updateAppRNumberQuery = "UPDATE application SET App_RNumber = ? WHERE App_Acronym = ?";
-          connection.query(updateAppRNumberQuery, [nextTaskNumber, Task_app_Acronym], (err) => {
+        // Fetch Plan_color if Task_plan is provided, otherwise use default color
+        if (Task_plan) {
+          const getPlanColorQuery = "SELECT Plan_color FROM plan WHERE Plan_MVP_name = ?";
+          connection.query(getPlanColorQuery, [Task_plan], (err, planResults) => {
             if (err) {
-              console.error("Error updating App_RNumber:", err);
+              console.error("Error fetching plan color:", err);
               return res.status(500).json({ status: "error", message: "Internal server error" });
             }
 
-            res.status(201).json({
-              status: "success",
-              message: "Task created successfully.",
-              taskId: newTaskId, // Returning the new Task_id in the response
-            });
+            let Plan_color = planResults.length > 0 ? planResults[0].Plan_color : "#6e7f7e";
+
+            // Insert task into the database
+            insertTask(newTaskId, Task_name, Task_description, Task_notes, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate, Plan_color, nextTaskNumber, res);
           });
-        });
+        } else {
+          // No Task_plan selected, assign default color 
+          insertTask(newTaskId, Task_name, Task_description, Task_notes, null, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate, "#6e7f7e", nextTaskNumber, res);
+        }
+      });
+    });
+  });
+};
+
+// Helper function to insert task into the database
+const insertTask = (Task_id, Task_name, Task_description, Task_notes, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate, Plan_color, nextTaskNumber, res) => {
+  const insertTaskQuery = "INSERT INTO task (Task_id, Task_name, Task_description, Task_notes, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+  connection.query(insertTaskQuery, [Task_id, Task_name, Task_description || "", Task_notes || "", Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate, Plan_color], (err) => {
+    if (err) {
+      console.error("Error inserting task into database:", err);
+      return res.status(500).json({ status: "error", message: "Internal server error" });
+    }
+
+    // Update App_RNumber for the next task
+    const updateAppRNumberQuery = "UPDATE application SET App_RNumber = ? WHERE App_Acronym = ?";
+    connection.query(updateAppRNumberQuery, [nextTaskNumber, Task_app_Acronym], (err) => {
+      if (err) {
+        console.error("Error updating App_RNumber:", err);
+        return res.status(500).json({ status: "error", message: "Internal server error" });
+      }
+
+      res.status(201).json({
+        status: "success",
+        message: "Task created successfully.",
+        taskId: Task_id,
+        Task_plan: Task_plan || "...",  // Return "..." if no plan is selected
+        Plan_color,
       });
     });
   });
