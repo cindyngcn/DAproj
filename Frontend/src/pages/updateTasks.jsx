@@ -1,133 +1,121 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import Header1 from "../components/header1";
-import { TextField, Button, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 
-export default function UpdateTask() {
-  const { appAcronym } = useParams(); // Extract appAcronym from URL params
-  const [taskDetails, setTaskDetails] = useState(null);
+export default function UpdateTasks() {
+  const { appAcronym, taskId } = useParams(); // Get parameters from URL
+  const navigate = useNavigate();
+  const [task, setTask] = useState(null);
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState("");
-  const [planColor, setPlanColor] = useState("");
+  const [notesHistory, setNotesHistory] = useState("");
+  const [newNote, setNewNote] = useState("");
 
-  console.log('App Acronym:', appAcronym); // Logging appAcronym
-
-  // Fetch task details using App_Acronym
   useEffect(() => {
+    // Fetch task details
+    /*const fetchTaskDetails = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/getTask/${appAcronym}`, { withCredentials: true });
+        if (response.data.status === "success") {
+          setTask(response.data.task);
+          setNotesHistory(response.data.task.Task_notes || "");
+          setSelectedPlan(response.data.task.Task_plan || "");
+        } else {
+          console.error("Error fetching task details:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching task details:", error);
+      }
+    };*/
     const fetchTaskDetails = async () => {
       try {
-        const taskResponse = await axios.get(`http://localhost:8080/getTask/${appAcronym}`, { withCredentials: true });
-        console.log('Task Response:', taskResponse.data); // Log the task response
-        if (taskResponse.data.status === 'success') {
-          const task = taskResponse.data.tasks.find(t => t.Task_id === appAcronym); // Find task based on Task_id
-          console.log('Fetched Task:', task); // Log the fetched task
-          setTaskDetails(task);
-          setSelectedPlan(task.Task_plan || ""); // Set the initial plan value, handle null
+        const response = await axios.get(`http://localhost:8080/getTask/${appAcronym}`, { withCredentials: true });
+    
+        if (response.data.status === "success") {
+          const taskIdFromURL = taskId; // Get the task ID from the URL or state
+          const selectedTask = response.data.tasks.find(task => task.Task_id === taskIdFromURL);
+    
+          if (selectedTask) {
+            setTask(selectedTask);
+            setNotesHistory(selectedTask.Task_notes || "");
+            setSelectedPlan(selectedTask.Task_plan || "");
+          } else {
+            console.error("Task not found in the response.");
+          }
         } else {
-          console.error('Error fetching task details:', taskResponse.data.message);
+          console.error("Error fetching task details:", response.data.message);
         }
       } catch (error) {
-        console.error('Error fetching task details:', error);
+        console.error("Error fetching task details:", error);
       }
-    };
+    };    
 
+    // Fetch available plans
     const fetchPlans = async () => {
       try {
-        // Fetch plans for the application using App_Acronym
-        const planResponse = await axios.get(`http://localhost:8080/getPlans/${appAcronym}`, { withCredentials: true });
-        console.log('Plans Response:', planResponse.data); // Log the plans response
-        if (planResponse.data.status === 'success') {
-          setPlans(planResponse.data.plans);
+        const response = await axios.get(`http://localhost:8080/getPlanColor/${appAcronym}`, { withCredentials: true });
+        if (response.data.status === "success") {
+          setPlans(response.data.plans);
         } else {
-          console.error('Error fetching plans:', planResponse.data.message);
+          console.error("Error fetching plans:", response.data.message);
         }
       } catch (error) {
-        console.error('Error fetching plans:', error);
+        console.error("Error fetching plans:", error);
       }
     };
 
     fetchTaskDetails();
     fetchPlans();
-  }, [appAcronym]); // Fetch data when appAcronym changes
-
-  const handlePlanChange = (event) => {
-    setSelectedPlan(event.target.value);
-  };
-
-  // Fetch color for the selected plan
-  useEffect(() => {
-    const fetchPlanColor = async () => {
-      try {
-        // Fetch the plan color based on the selected plan and appAcronym
-        const planResponse = await axios.get(`http://localhost:8080/getPlanColor/${appAcronym}/${selectedPlan}`, { withCredentials: true });
-        console.log('Plan Color Response:', planResponse.data); // Log the color response
-        if (planResponse.data.status === 'success') {
-          const plan = planResponse.data.plan;
-          setPlanColor(plan.Plan_color);
-        } else {
-          setPlanColor('#d13434'); // Default color if no color found
-        }
-      } catch (error) {
-        console.error('Error fetching plan color:', error);
-        setPlanColor('#d13434'); // Default color
-      }
-    };
-
-    if (selectedPlan) {
-      fetchPlanColor();
-    }
-  }, [selectedPlan, appAcronym]);
-
-  if (!taskDetails) {
-    return <div>Loading...</div>; // Loading state while fetching
-  }
+  }, [appAcronym, taskId]);
 
   return (
-    <>
-      <Header1 />
-      <h1 style={{ marginLeft: '20px' }}>Update Task - {taskDetails.Task_name}</h1>
+    <div style={{ width: "600px", margin: "auto", padding: "20px", borderRadius: "8px", background: "#f9f9f9" }}>
+      <button 
+        style={{ display: "block", marginBottom: "15px", background: "none", border: "none", color: "blue", cursor: "pointer" }}
+        onClick={() => navigate(`/tasks/${appAcronym}`)}
+      >
+        &lt; Back
+      </button>
 
-      {/* Task Details Form */}
-      <div style={{ marginLeft: '20px', marginBottom: '20px' }}>
-        <TextField
-          name="Task_name"
-          label="Task Name"
-          value={taskDetails.Task_name}
-          InputProps={{ readOnly: true }}
-          style={{ marginLeft: '10px', marginBottom: '10px' }}
-        />
-        <TextField
-          name="Task_id"
-          label="Task ID"
-          value={taskDetails.Task_id}
-          InputProps={{ readOnly: true }}
-          style={{ marginLeft: '10px', marginBottom: '10px' }}
-        />
-
-        <FormControl style={{ marginLeft: '10px', marginBottom: '10px' }}>
-          <InputLabel>Task Plan</InputLabel>
-          <Select
-            value={selectedPlan}
-            onChange={handlePlanChange}
-            label="Task Plan"
-          >
+      <h2>Update Task</h2>
+      {task && (
+        <form style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+          {/* Task Name */}
+          <label>Task Name:</label>
+          <input type="text" value={task.Task_name} readOnly style={{ padding: "8px", borderRadius: "5px", border: "1px solid #ccc" }} />
+          
+          {/* Task ID */}
+          <label>Task ID:</label>
+          <input type="text" value={taskId} readOnly style={{ padding: "8px", borderRadius: "5px", border: "1px solid #ccc" }} />
+          
+          {/* Task Plan */}
+          <label>Plan:</label>
+          <select value={selectedPlan} onChange={(e) => setSelectedPlan(e.target.value)} style={{ padding: "8px", borderRadius: "5px", border: "1px solid #ccc" }}>
+            <option value="">Select a Plan</option>
             {plans.map((plan) => (
-              <MenuItem key={plan.Plan_MVP_name} value={plan.Plan_MVP_name}>
-                {plan.Plan_MVP_name}
-              </MenuItem>
+              <option key={plan.Plan_MVP_name} value={plan.Plan_MVP_name}>{plan.Plan_MVP_name}</option>
             ))}
-          </Select>
-        </FormControl>
-
-        {/* Plan Color Display */}
-        <div style={{ marginTop: '10px' }}>
-          <span style={{ fontWeight: 'bold', marginRight: '10px' }}>Plan Color:</span>
-          <span style={{ backgroundColor: planColor, padding: '5px 10px', borderRadius: '5px', color: 'white' }}>
-            {planColor}
-          </span>
-        </div>
-      </div>
-    </>
+          </select>
+          
+          {/* Task Description */}
+          <label>Description:</label>
+          <textarea value={task.Task_description} readOnly style={{ padding: "8px", borderRadius: "5px", border: "1px solid #ccc" }}></textarea>
+          
+          {/* Notes History */}
+          <label>Notes History:</label>
+          <textarea value={notesHistory} readOnly style={{ minHeight: "100px", resize: "vertical", padding: "8px", borderRadius: "5px", border: "1px solid #ccc" }}></textarea>
+          
+          {/* New Note Input */}
+          <label>Enter Note:</label>
+          <textarea placeholder="Enter note" value={newNote} onChange={(e) => setNewNote(e.target.value)} style={{ minHeight: "60px", resize: "vertical", padding: "8px", borderRadius: "5px", border: "1px solid #ccc" }}></textarea>
+          
+          {/* Buttons */}
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <button style={{ background: "#dc3545", color: "white", padding: "10px 15px", border: "none", borderRadius: "5px", cursor: "pointer" }}>Release Task</button>
+            <button style={{ background: "#007bff", color: "white", padding: "10px 15px", border: "none", borderRadius: "5px", cursor: "pointer" }}>Save Changes</button>
+          </div>
+        </form>
+      )}
+    </div>
   );
 }

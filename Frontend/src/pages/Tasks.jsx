@@ -4,6 +4,7 @@ import Header1 from "../components/header1";
 import { TextField, Button } from '@mui/material';
 import { Link } from "react-router-dom";
 import axios from 'axios'; // Import Axios for API requests
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 export default function Tasks() {
   const { appAcronym } = useParams();
@@ -94,6 +95,8 @@ export default function Tasks() {
   
     fetchTasksAndColors();
   }, [appAcronym]);  
+
+  const navigate = useNavigate();
 
   return (
     <>
@@ -208,6 +211,7 @@ export default function Tasks() {
                       alignItems: "center",
                       position: "relative",
                     }}
+                    onClick={() => navigate(`/updateTask/${task.Task_id}/${appAcronym}`)} 
                     onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
                     onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1.0)"}
                   >
