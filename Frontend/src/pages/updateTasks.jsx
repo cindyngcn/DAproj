@@ -149,7 +149,7 @@ export default function UpdateTasks() {
                 <textarea 
                   value={task.Task_description} 
                   readOnly 
-                  style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%", minHeight: "120px" }} 
+                  style={{ padding: "10px", resize: "vertical", borderRadius: "5px", border: "1px solid #ccc", width: "100%", minHeight: "120px" }} 
                 ></textarea>
               </div>
             </div>
@@ -168,7 +168,6 @@ export default function UpdateTasks() {
   
               {/* New Note Input */}
               <div>
-                <label style={{ fontWeight: "600" }}>Enter Note:</label>
                 <textarea 
                   placeholder="Enter note" 
                   value={newNote} 
