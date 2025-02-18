@@ -44,6 +44,7 @@ const createPlanRouter = require('./Routers/createPlanRouter.js');
 const getPlanRouter = require('./Routers/getPlanRouter.js');
 const createTaskRouter = require('./Routers/createTaskRouter.js');
 const getTaskRouter = require('./Routers/getTaskRouter.js');
+const updateTaskRouter = require('./Routers/updateTaskRouter.js');
 
 // Over-splitting - e.g. 1 for task, 1 for authentication
 app.use('/createUser', createUserRouter);
@@ -58,6 +59,7 @@ app.use('/createPlan', createPlanRouter);
 app.use('/getPlanColor', getPlanRouter);
 app.use('/createTask', createTaskRouter);
 app.use('/getTask', getTaskRouter);
+app.use('/updateTask', updateTaskRouter);
 
 app.get('/user', (req, res) => {
   const token = req.cookies.authToken;  // Ensure correct cookie name
