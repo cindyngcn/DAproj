@@ -76,7 +76,6 @@ export default function UpdateTasks() {
   }, [appAcronym, taskId]);
 
   // Function to append log to notes history
-
   const appendToNotesHistory = (entry, taskPlan) => {
     const timestamp = new Date().toLocaleString();
     const logEntry = `${timestamp} (${username}): ${entry}`;
@@ -102,7 +101,6 @@ export default function UpdateTasks() {
       return updatedHistory;  // Return the updated notes history
     });
   };
-  
   // Generalized State Update Logic
   const updateTaskState = async (newState) => {
     try {
@@ -212,7 +210,6 @@ export default function UpdateTasks() {
       }
     }
   }, [task]);
-      
 
   const handlePlanChange = () => {
     if (selectedPlan !== task.Task_plan) {
