@@ -14,7 +14,7 @@ export default function Tasks() {
   const [planColor, setPlanColor] = useState(""); // New state for Plan Color
   const [tasks, setTasks] = useState([]); // Store tasks
 
-  const taskStates = ["OPEN", "TO-DO", "DOING", "DONE", "CLOSED"];
+  const taskStates = ["OPEN", "TODO", "DOING", "DONE", "CLOSED"];
 
   const handleCreatePlan = async () => {
     try {

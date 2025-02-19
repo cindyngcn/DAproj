@@ -104,12 +104,94 @@ export default function UpdateTasks() {
   };
 
   // Handle state change
-  const handleStateChange = (newState) => {
+  /*const handleStateChange = (newState) => {
     const currentState = task.Task_state;
     if (newState !== currentState) {
       appendToNotesHistory(`CREATE >> ${newState}`);
     }
-  };
+  };*/
+  /*const handleReleaseTask = async () => {
+    if (task.Task_state !== "OPEN") {
+      alert("Only tasks in OPEN state can be released.");
+      return;
+    }
+  
+    try {
+      const updatedState = "TO-DO"; // Moving from OPEN to TO-DO
+      const response = await axios.put(
+        "http://localhost:8080/updateTaskState",
+        {
+          Task_id: taskId,
+          Task_state: updatedState,
+          Task_app_Acronym: appAcronym
+        },
+        { withCredentials: true }
+      );
+  
+      if (response.data.status === "success") {
+        // Reflect the change in UI
+        setTask((prevTask) => ({
+          ...prevTask,
+          Task_state: updatedState
+        }));
+  
+        // Log the state change in notes history
+        appendToNotesHistory(`STATE UPDATED: OPEN >> TO-DO`);
+        
+        alert("Task state updated successfully.");
+      } else {
+        console.error("Error updating task state:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error updating task state:", error);
+    }
+  };*/
+
+  const handleReleaseTask = async () => {
+    if (task.Task_state !== "OPEN") {
+        alert("Only tasks in OPEN state can be released.");
+        return;
+    }
+
+    try {
+        const updatedState = "TODO"; // Moving from OPEN to TO-DO
+        console.log({
+          Task_id: taskId,
+          Task_state: updatedState,
+          Task_app_Acronym: appAcronym
+        });
+        const response = await axios.put(
+            "http://localhost:8080/updateTaskState",
+            {
+                Task_id: taskId,
+                Task_state: updatedState,
+                Task_app_Acronym: appAcronym
+            },
+            {
+                withCredentials: true // ✅ Ensures cookies (authToken) are sent
+            }
+        );
+
+        if (response.data.status === "success") {
+            // Reflect the change in UI
+            setTask((prevTask) => ({
+                ...prevTask,
+                Task_state: updatedState
+            }));
+
+            // Log the state change in notes history
+            appendToNotesHistory(`STATE UPDATED: ${task.Task_state} >> TO-DO`);
+
+            alert("Task state updated successfully.");
+        } else {
+            alert(`Error: ${response.data.message}`);
+            console.error("Error updating task state:", response.data.message);
+        }
+    } catch (error) {
+        alert("An error occurred while updating the task state.");
+        console.error("Error updating task state:", error);
+    }
+};
 
   const handlePlanChange = () => {
     if (selectedPlan !== task.Task_plan) {
@@ -154,17 +236,19 @@ export default function UpdateTasks() {
                 </div>
                 <div style={{ flex: "1" }}>
                   <label style={{ fontWeight: "600" }}>Task State:</label>
-                  <select 
-                    value={task.Task_state} 
-                    onChange={(e) => handleStateChange(e.target.value)} 
-                    style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }}
+                  {/* Display Task State as Read-Only */}
+                  <div 
+                    style={{ 
+                      padding: "10px", 
+                      borderRadius: "5px", 
+                      border: "1px solid #ccc", 
+                      width: "100%", 
+                      backgroundColor: "#f9f9f9", 
+                      textAlign: "center" 
+                    }}
                   >
-                    <option value="OPEN">OPEN</option>
-                    <option value="TO-DO">TO-DO</option>
-                    <option value="DOING">DOING</option>
-                    <option value="DONE">DONE</option>
-                    <option value="CLOSED">CLOSED</option>
-                  </select>
+                    {task.Task_state}
+                  </div>
                 </div>
               </div>
 
@@ -212,7 +296,6 @@ export default function UpdateTasks() {
                 <label style={{ fontWeight: "600" }}>Notes History:</label>
                 <div
                   style={{
-                    maxHeight: "150px",  // Set a max height for scrolling
                     overflowY: "auto",   // Allow vertical scrolling 
                     resize: "vertical", 
                     padding: "10px", 
@@ -246,10 +329,11 @@ export default function UpdateTasks() {
             </div>
           </form>
         )}
-    
+
         {/* Buttons */}
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "30px" }}>
           <button 
+            onClick={handleReleaseTask}
             style={{ 
               background: "#ff3e8d", 
               color: "white", 
