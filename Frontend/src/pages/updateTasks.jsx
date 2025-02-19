@@ -81,9 +81,9 @@ export default function UpdateTasks() {
     const timestamp = new Date().toLocaleString();
     const logEntry = `${timestamp} (${username}): ${entry}`;
 
-    // Update the local notes history
+    // Update the local notes history by adding the new logEntry at the top
     setNotesHistory((prevHistory) => {
-      const updatedHistory = prevHistory + "\n" + logEntry;
+      const updatedHistory = logEntry + "\n" + prevHistory; // Add the new note at the beginning
 
       // Send the updated notes history and plan to the backend
       axios.put('http://localhost:8080/updateTask', {
