@@ -84,7 +84,7 @@ export default function UpdateTasks() {
     // Update the local notes history by adding the new logEntry at the top
     setNotesHistory((prevHistory) => {
       const updatedHistory = logEntry + "\n" + prevHistory; // Add the new note at the beginning
-
+      console.log("setting notes history" + logEntry);
       // Send the updated notes history and plan to the backend
       axios.put('http://localhost:8080/updateTask', {
         Task_id: taskId,
@@ -102,51 +102,7 @@ export default function UpdateTasks() {
       return updatedHistory;  // Return the updated notes history
     });
   };
-
-  // Handle state change
-  /*const handleStateChange = (newState) => {
-    const currentState = task.Task_state;
-    if (newState !== currentState) {
-      appendToNotesHistory(`CREATE >> ${newState}`);
-    }
-  };*/
-  /*const handleReleaseTask = async () => {
-    if (task.Task_state !== "OPEN") {
-      alert("Only tasks in OPEN state can be released.");
-      return;
-    }
   
-    try {
-      const updatedState = "TO-DO"; // Moving from OPEN to TO-DO
-      const response = await axios.put(
-        "http://localhost:8080/updateTaskState",
-        {
-          Task_id: taskId,
-          Task_state: updatedState,
-          Task_app_Acronym: appAcronym
-        },
-        { withCredentials: true }
-      );
-  
-      if (response.data.status === "success") {
-        // Reflect the change in UI
-        setTask((prevTask) => ({
-          ...prevTask,
-          Task_state: updatedState
-        }));
-  
-        // Log the state change in notes history
-        appendToNotesHistory(`STATE UPDATED: OPEN >> TO-DO`);
-        
-        alert("Task state updated successfully.");
-      } else {
-        console.error("Error updating task state:", response.data.message);
-      }
-    } catch (error) {
-      console.error("Error updating task state:", error);
-    }
-  };*/
-
   const handleReleaseTask = async () => {
     if (task.Task_state !== "OPEN") {
         alert("Only tasks in OPEN state can be released.");
@@ -154,7 +110,7 @@ export default function UpdateTasks() {
     }
 
     try {
-        const updatedState = "TODO"; // Moving from OPEN to TO-DO
+        const updatedState = "TODO"; // Moving from OPEN to TODO
         console.log({
           Task_id: taskId,
           Task_state: updatedState,
@@ -180,7 +136,7 @@ export default function UpdateTasks() {
             }));
 
             // Log the state change in notes history
-            appendToNotesHistory(`STATE UPDATED: ${task.Task_state} >> TO-DO`);
+            appendToNotesHistory(`STATE UPDATED: ${task.Task_state} >> TODO`);
 
             alert("Task state updated successfully.");
         } else {
@@ -193,6 +149,180 @@ export default function UpdateTasks() {
     }
 };
 
+  const handleWorkOnTask = async () => {
+    if (task.Task_state !== "TODO") {
+      alert("This task cannot be worked on until it is in the 'TO-DO' state.");
+      return;
+    }
+
+    try {
+      const updatedState = "DOING";
+      const response = await axios.put(
+        "http://localhost:8080/updateTaskState",
+        {
+          Task_id: taskId,
+          Task_state: updatedState,
+          Task_app_Acronym: appAcronym
+        },
+        { withCredentials: true }
+      );
+
+      if (response.data.status === "success") {
+        setTask((prevTask) => ({
+          ...prevTask,
+          Task_state: updatedState
+        }));
+        appendToNotesHistory(`STATE UPDATED: ${task.Task_state} >> DOING`);
+        alert("Task state updated successfully.");
+      } else {
+        console.error("Error updating task state:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error updating task state:", error);
+    }
+  };
+
+  const handleReturnToTodo = async () => {
+    if (task.Task_state !== "DOING") {
+      alert("Only tasks in DOING state can be returned to TODO.");
+      return;
+    }
+  
+    try {
+      const updatedState = "TODO"; // Changing task state back to TODO
+      const response = await axios.put(
+        "http://localhost:8080/updateTaskState",
+        {
+          Task_id: taskId,
+          Task_state: updatedState,
+          Task_app_Acronym: appAcronym
+        },
+        {
+          withCredentials: true // ✅ Ensures cookies (authToken) are sent
+        }
+      );
+  
+      if (response.data.status === "success") {
+        // Reflect the change in UI
+        setTask((prevTask) => ({
+          ...prevTask,
+          Task_state: updatedState
+        }));
+  
+        // Log the state change in notes history
+        appendToNotesHistory(`STATE UPDATED: ${task.Task_state} >> TODO`);
+  
+        alert("Task state updated successfully.");
+      } else {
+        alert(`Error: ${response.data.message}`);
+        console.error("Error updating task state:", response.data.message);
+      }
+    } catch (error) {
+      alert("An error occurred while updating the task state.");
+      console.error("Error updating task state:", error);
+    }
+  };  
+
+  // Function to handle the task state change
+  const handleSeekApproval = async () => {
+    if (task.Task_state !== "DOING") {
+      alert("Only tasks in DOING state can be marked as DONE.");
+      return;
+    }
+  
+    try {
+      const updatedState = "DONE"; // Changing task state to DONE
+      const response = await axios.put(
+        "http://localhost:8080/updateTaskState", // Your API endpoint
+        {
+          Task_id: taskId, // Task ID from the task object
+          Task_state: updatedState, // The new state (DONE)
+          Task_app_Acronym: appAcronym // Your app acronym
+        },
+        {
+          withCredentials: true // Ensures cookies (authToken) are sent
+        }
+      );
+  
+      if (response.data.status === "success") {
+        // Reflect the change in UI
+        setTask((prevTask) => ({
+          ...prevTask,
+          Task_state: updatedState
+        }));
+  
+        // Log the state change in notes history
+        appendToNotesHistory(`STATE UPDATED: ${task.Task_state} >> DONE`);
+  
+        alert("Task state updated to DONE.");
+      } else {
+        alert(`Error: ${response.data.message}`);
+        console.error("Error updating task state:", response.data.message);
+      }
+    } catch (error) {
+      alert("An error occurred while updating the task state.");
+      console.error("Error updating task state:", error);
+    }
+  };  
+
+  const handleRejectTask = async () => {
+    if (task.Task_state !== "DONE") {
+      alert("Only tasks in DONE state can be rejected.");
+      return;
+    }
+
+    try {
+      const updatedState = "DOING"; // Changing task state from DONE to DOING
+      const response = await axios.put("http://localhost:8080/updateTaskState", {
+        Task_id: taskId,
+        Task_state: updatedState,
+        Task_app_Acronym: appAcronym
+      }, { withCredentials: true });
+
+      if (response.data.status === "success") {
+        setTask((prevTask) => ({
+          ...prevTask,
+          Task_state: updatedState
+        }));
+        appendToNotesHistory(`STATE UPDATED: ${task.Task_state} >> DOING`);
+        alert("Task state updated successfully.");
+      } else {
+        console.error("Error updating task state:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error updating task state:", error);
+    }
+  };
+
+  const handleApproveTask = async () => {
+    if (task.Task_state !== "DONE") {
+      alert("Only tasks in DONE state can be approved.");
+      return;
+    }
+
+    try {
+      const updatedState = "CLOSED"; // Changing task state from DONE to CLOSED
+      const response = await axios.put("http://localhost:8080/updateTaskState", {
+        Task_id: taskId,
+        Task_state: updatedState,
+        Task_app_Acronym: appAcronym
+      }, { withCredentials: true });
+
+      if (response.data.status === "success") {
+        setTask((prevTask) => ({
+          ...prevTask,
+          Task_state: updatedState
+        }));
+        appendToNotesHistory(`STATE UPDATED: ${task.Task_state} >> CLOSED`);
+        alert("Task state updated to CLOSED.");
+      } else {
+        console.error("Error updating task state:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error updating task state:", error);
+    }
+  };
+
   const handlePlanChange = () => {
     if (selectedPlan !== task.Task_plan) {
       appendToNotesHistory(`UPDATED_PLAN: PLAN = ${task.Task_plan} UPDATED TO ${selectedPlan}`, selectedPlan);
@@ -203,6 +333,7 @@ export default function UpdateTasks() {
   const handleNewNote = () => {
     if (newNote.trim()) {
       appendToNotesHistory(newNote);
+      console.log("Appending to notes history:", newNote);
       setNewNote(""); // Clear new note input
     }
   };
@@ -216,8 +347,6 @@ export default function UpdateTasks() {
         >
           &lt; Back
         </button>
-    
-        <h2 style={{ textAlign: "center", marginBottom: "30px" }}>Update Task</h2>
     
         {task && (
           <form style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
@@ -287,6 +416,121 @@ export default function UpdateTasks() {
                   style={{ padding: "10px", resize: "vertical", borderRadius: "5px", border: "1px solid #ccc", width: "100%", minHeight: "120px" }} 
                 ></textarea>
               </div>
+
+              {/* Conditional Buttons for Task State */}
+              <div style={{ display: "flex", gap: "20px", marginTop: "30px" }}>
+              {task.Task_state === "OPEN" && (
+                <button 
+                  onClick={handleReleaseTask}
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: "#28a745",
+                    border: "none",
+                    borderRadius: "5px",
+                    color: "#fff",
+                    cursor: "pointer"
+                  }}
+                >
+                  Release Task
+                </button>
+              )}
+
+              {task.Task_state === "TODO" && (
+                <button 
+                  onClick={handleWorkOnTask}
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: "#007bff",
+                    border: "none",
+                    borderRadius: "5px",
+                    color: "#fff",
+                    cursor: "pointer"
+                  }}
+                >
+                  Work On Task
+                </button>
+              )}
+
+              {task.Task_state === "DOING" && (
+                <>
+                  <button 
+                    onClick={handleReturnToTodo} // New function for "Return Task to TODO"
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#ffc107", // Yellow for Return button
+                      border: "none",
+                      borderRadius: "5px",
+                      color: "#fff",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Return Task to TODO
+                  </button>
+                  <button 
+                    onClick={handleSeekApproval} // Function to change state to DONE
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#17a2b8", // Info color
+                      border: "none",
+                      borderRadius: "5px",
+                      color: "#fff",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Seek Approval
+                  </button>
+                  <button 
+                    onClick={() => alert("Request for Deadline Extension clicked")} // Placeholder for Request for Deadline Extension
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#dc3545", // Danger color
+                      border: "none",
+                      borderRadius: "5px",
+                      color: "#fff",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Request for Deadline Extension
+                  </button>
+                </>
+              )}
+
+              {task.Task_state === "DONE" && (
+                <div>
+                  <button 
+                    onClick={handleRejectTask} // Function to reject the task
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#dc3545", // Red for Reject button
+                      border: "none",
+                      borderRadius: "5px",
+                      color: "#fff",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Reject Task
+                  </button>
+                  <button 
+                    onClick={handleApproveTask} // Function to approve the task
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#28a745", // Green for Approve button
+                      border: "none",
+                      borderRadius: "5px",
+                      color: "#fff",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Approve Task
+                  </button>
+                </div>
+              )}
+              </div>
+
+              {task.Task_state === "CLOSED" && (
+                <div style={{ padding: "20px", fontStyle: "italic", color: "#6c757d" }}>
+                </div>
+              )}
             </div>
 
             {/* Right Section (Notes History and New Note Input) */}
@@ -336,20 +580,6 @@ export default function UpdateTasks() {
 
         {/* Buttons */}
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "30px" }}>
-          <button 
-            onClick={handleReleaseTask}
-            style={{ 
-              background: "#ff3e8d", 
-              color: "white", 
-              padding: "12px 20px", 
-              border: "none", 
-              borderRadius: "5px", 
-              cursor: "pointer", 
-              width: "48%" 
-            }}
-          >
-            Release Task
-          </button>
           <button 
             style={{ 
               background: "#3e52ff", 
