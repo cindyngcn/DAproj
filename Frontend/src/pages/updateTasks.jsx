@@ -167,7 +167,7 @@ export default function UpdateTasks() {
                   </select>
                 </div>
               </div>
-    
+
               {/* Task ID */}
               <div>
                 <label style={{ fontWeight: "600" }}>Task ID:</label>
@@ -178,7 +178,7 @@ export default function UpdateTasks() {
                   style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }} 
                 />
               </div>
-    
+
               {/* Task Plan */}
               <div>
                 <label style={{ fontWeight: "600" }}>Plan:</label>
@@ -193,7 +193,7 @@ export default function UpdateTasks() {
                   ))}
                 </select>
               </div>
-    
+
               {/* Task Description */}
               <div>
                 <label style={{ fontWeight: "600" }}>Description:</label>
@@ -204,19 +204,36 @@ export default function UpdateTasks() {
                 ></textarea>
               </div>
             </div>
-    
+
             {/* Right Section (Notes History and New Note Input) */}
             <div style={{ flex: "1", minWidth: "300px", display: "flex", flexDirection: "column", gap: "15px" }}>
               {/* Notes History */}
               <div>
                 <label style={{ fontWeight: "600" }}>Notes History:</label>
-                <textarea 
-                  value={notesHistory} 
-                  readOnly 
-                  style={{ minHeight: "150px", resize: "vertical", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }} 
-                ></textarea>
+                <div
+                  style={{
+                    maxHeight: "150px",  // Set a max height for scrolling
+                    overflowY: "auto",   // Allow vertical scrolling 
+                    resize: "vertical", 
+                    padding: "10px", 
+                    borderRadius: "5px", 
+                    border: "1px solid #ccc", 
+                    width: "100%", 
+                    background: "#f9f9f9", 
+                    whiteSpace: "pre-wrap" // Ensures line breaks are preserved
+                  }}
+                >
+                  {notesHistory.split('\n').map((line, index) => {
+                    // Check if this line contains the plan change message
+                    if (line.includes('UPDATED_PLAN')) {
+                      return <span key={index} style={{ color: '#61b6a4' }}>{line}</span>;
+                    } else {
+                      return <div key={index}>{line}</div>;
+                    }
+                  })}
+                </div>
               </div>
-    
+
               {/* New Note Input */}
               <div>
                 <textarea 
