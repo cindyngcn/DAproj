@@ -52,18 +52,6 @@ export default function UpdateTasks() {
     };
 
     // Fetch logged-in user's username
-    /*const fetchUsername = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/user', { withCredentials: true });
-        if (response.data.status === "success") {
-          setUsername(response.data.users);
-        } else {
-          console.error("Error fetching username:", response.data.message);
-        }
-      } catch (error) {
-        console.error("Error fetching username:", error);
-      }
-    };*/
     const fetchUsername = async () => {
       try {
         // Fetch current user data from the /currentUser endpoint
@@ -88,62 +76,32 @@ export default function UpdateTasks() {
   }, [appAcronym, taskId]);
 
   // Function to append log to notes history
-  /*const appendToNotesHistory = (entry) => {
+
+  const appendToNotesHistory = (entry, taskPlan) => {
     const timestamp = new Date().toLocaleString();
     const logEntry = `${timestamp} (${username}): ${entry}`;
-    setNotesHistory((prevHistory) => prevHistory + "\n" + logEntry);
-    // Send the updated notes history to the backend
-    axios.post(`http://localhost:8080/updateTaskNotes/${taskId}`, { notesHistory: notesHistory + "\n" + logEntry }, { withCredentials: true });
-  };*/
-  /*const appendToNotesHistory = (entry, taskId, taskPlan) => {
-    const timestamp = new Date().toLocaleString();
-    const logEntry = `${timestamp} (${username}): ${entry}`;
-    
+
     // Update the local notes history
     setNotesHistory((prevHistory) => {
-        const updatedHistory = prevHistory + "\n" + logEntry;
-        
-        // Send the updated notes history to the backend
-        axios.put('http://localhost:8080/updateTask', {
-            Task_id: taskId,
-            Task_notes: updatedHistory,  // Updated notes history
-            Task_plan: taskPlan,         // Updated plan (if changed)
-            Task_app_Acronym: appAcronym // If needed, the app acronym
-        }, { withCredentials: true })
-        .then(response => {
-            console.log('Task updated successfully:', response);
-        })
-        .catch(error => {
-            console.error('Error updating task:', error);
-        });
-        
-        return updatedHistory;  // Return the updated notes history
-    });
-};*/
-const appendToNotesHistory = (entry, taskPlan) => {
-  const timestamp = new Date().toLocaleString();
-  const logEntry = `${timestamp} (${username}): ${entry}`;
+      const updatedHistory = prevHistory + "\n" + logEntry;
 
-  // Update the local notes history
-  setNotesHistory((prevHistory) => {
-    const updatedHistory = prevHistory + "\n" + logEntry;
-    // Send the updated notes history to the backend
-    axios.put('http://localhost:8080/updateTask', {
-      Task_id: taskId,
-      Task_notes: updatedHistory,  // Updated notes history
-      Task_plan: taskPlan,         // Updated plan (if changed)
-      Task_app_Acronym: appAcronym // If needed, the app acronym
-    }, { withCredentials: true })
-    .then(response => {
-      console.log('Task updated successfully:', response);
-    })
-    .catch(error => {
-      console.error('Error updating task:', error);
-    });
+      // Send the updated notes history and plan to the backend
+      axios.put('http://localhost:8080/updateTask', {
+        Task_id: taskId,
+        Task_notes: updatedHistory,  // Updated notes history
+        Task_plan: taskPlan,         // Updated plan (if changed)
+        Task_app_Acronym: appAcronym // If needed, the app acronym
+      }, { withCredentials: true })
+      .then(response => {
+        console.log('Task updated successfully:', response);
+      })
+      .catch(error => {
+        console.error('Error updating task:', error);
+      });
 
-    return updatedHistory;  // Return the updated notes history
-  });
-};
+      return updatedHistory;  // Return the updated notes history
+    });
+  };
 
   // Handle state change
   const handleStateChange = (newState) => {
@@ -153,10 +111,9 @@ const appendToNotesHistory = (entry, taskPlan) => {
     }
   };
 
-  // Handle plan change
   const handlePlanChange = () => {
     if (selectedPlan !== task.Task_plan) {
-      appendToNotesHistory(`UPDATED_PLAN: ${selectedPlan}`);
+      appendToNotesHistory(`UPDATED_PLAN: PLAN = ${task.Task_plan} UPDATED TO ${selectedPlan}`, selectedPlan);
     }
   };
 
@@ -227,7 +184,7 @@ const appendToNotesHistory = (entry, taskPlan) => {
                 <label style={{ fontWeight: "600" }}>Plan:</label>
                 <select 
                   value={selectedPlan} 
-                  onChange={(e) => { setSelectedPlan(e.target.value); handlePlanChange(); }} 
+                  onChange={(e) => setSelectedPlan(e.target.value)} 
                   style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }}
                 >
                   <option value="">Select a Plan</option>
@@ -298,7 +255,10 @@ const appendToNotesHistory = (entry, taskPlan) => {
               cursor: "pointer", 
               width: "48%" 
             }}
-            onClick={handleNewNote}
+            onClick={() => {
+              handlePlanChange(selectedPlan);  // Now it runs only when saving
+              handleNewNote();
+            }}
           >
             Save Changes
           </button>
