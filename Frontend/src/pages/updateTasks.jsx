@@ -307,9 +307,13 @@ export default function UpdateTasks() {
                   }}
                 >
                   {notesHistory.split('\n').map((line, index) => {
-                    // Check if this line contains the plan change message
+                    // Check if the line contains the "STATE UPDATED" phrase and change color
+                    if (line.includes('STATE UPDATED')) {
+                      return <div key={index} style={{ color: '#2832C2' }}>{line}</div>;
+                    }
+                    // Check if the line contains the plan change message
                     if (line.includes('UPDATED_PLAN')) {
-                      return <span key={index} style={{ color: '#61b6a4' }}>{line}</span>;
+                      return <span key={index} style={{ color: '#2AAA8A' }}>{line}</span>;
                     } else {
                       return <div key={index}>{line}</div>;
                     }
