@@ -103,188 +103,14 @@ export default function UpdateTasks() {
     });
   };
   
-  /*const handleReleaseTask = async () => {
-    if (task.Task_state !== "OPEN") {
-        alert("Only tasks in OPEN state can be released.");
-        return;
-    }
-
-    try {
-        const updatedState = "TODO"; // Moving from OPEN to TODO
-        console.log({
-          Task_id: taskId,
-          Task_state: updatedState,
-          Task_app_Acronym: appAcronym
-        });
-        const response = await axios.put(
-            "http://localhost:8080/updateTaskState",
-            {
-                Task_id: taskId,
-                Task_state: updatedState,
-                Task_app_Acronym: appAcronym
-            },
-            {
-                withCredentials: true // ✅ Ensures cookies (authToken) are sent
-            }
-        );
-
-        if (response.data.status === "success") {
-            // Reflect the change in UI
-            setTask((prevTask) => ({
-                ...prevTask,
-                Task_state: updatedState
-            }));
-
-            // Log the state change in notes history
-            appendToNotesHistory(`STATE UPDATED: ${prevTask.Task_state} >> TODO`);
-
-            alert("Task state updated successfully.");
-        } else {
-            alert(`Error: ${response.data.message}`);
-            console.error("Error updating task state:", response.data.message);
-        }
-    } catch (error) {
-        alert("An error occurred while updating the task state.");
-        console.error("Error updating task state:", error);
-    }
-};*/
-
+  // Generalized State Update Logic
   const updateTaskState = async (newState) => {
-    if (!["OPEN", "TODO", "DOING", "DONE", "CLOSED"].includes(newState)) {
-        alert("Invalid task state.");
-        return;
-    }
-
     try {
-        const response = await axios.put(
-            "http://localhost:8080/updateTaskState",
-            {
-                Task_id: taskId,
-                Task_state: newState,
-                Task_app_Acronym: appAcronym
-            },
-            { withCredentials: true }
-        );
-
-        if (response.data.status === "success") {
-            setTask((prevTask) => ({
-                ...prevTask,
-                Task_state: newState
-            }));
-            alert(`Task state updated to ${newState}.`);
-        } else {
-            console.error("Error updating task state:", response.data.message);
-            alert(`Error: ${response.data.message}`);
-        }
-    } catch (error) {
-        console.error("Error updating task state:", error);
-        alert("An error occurred while updating the task state.");
-    }
-  };
-
-  // Handle Release Task (OPEN to TODO)
-  const handleReleaseTask = async () => {
-    if (task.Task_state !== "OPEN") {
-        alert("Only tasks in OPEN state can be released.");
-        return;
-    }
-    await updateTaskState("TODO");
-  };
-
-  // Handle Work on Task (TODO to DOING)
-  const handleWorkOnTask = async () => {
-    if (task.Task_state !== "TODO") {
-        alert("This task cannot be worked on until it is in the 'TO-DO' state.");
-        return;
-    }
-    await updateTaskState("DOING");
-  };
-
-  // Handle Return to TODO (DOING to TODO)
-  const handleReturnToTodo = async () => {
-    if (task.Task_state !== "DOING") {
-        alert("Only tasks in DOING state can be returned to TODO.");
-        return;
-    }
-    await updateTaskState("TODO");
-  };
-
-  // Handle Seek Approval (DOING to DONE)
-  const handleSeekApproval = async () => {
-    if (task.Task_state !== "DOING") {
-        alert("Only tasks in DOING state can be marked as DONE.");
-        return;
-    }
-    await updateTaskState("DONE");
-  };
-
-  // Handle Reject Task (DONE to DOING)
-  const handleRejectTask = async () => {
-    if (task.Task_state !== "DONE") {
-        alert("Only tasks in DONE state can be rejected.");
-        return;
-    }
-    await updateTaskState("DOING");
-  };
-
-  // Handle Approve Task (DONE to CLOSED)
-  const handleApproveTask = async () => {
-    if (task.Task_state !== "DONE") {
-        alert("Only tasks in DONE state can be approved.");
-        return;
-    }
-    await updateTaskState("CLOSED");
-  };
-
-  useEffect(() => {
-    if (task && task.Task_state) {
-        let prevState = "";
-
-        switch (task.Task_state) {
-          case "TODO":
-              prevState = "DOING";  // Transitioning to TODO from DOING
-              break;
-          case "DOING":
-              prevState = "TODO";  // Transitioning to DOING from TODO
-              break;
-          case "CLOSED":
-              prevState = "DONE";  // Transitioning to CLOSED from DONE
-              break;
-          case "DONE":
-              prevState = "DOING";  // Transitioning to DONE from DOING
-              break;
-          default:
-              prevState = "";
-              break;
-        }      
-
-        // Append the state change to the notes history
-        if (prevState) {
-            appendToNotesHistory(`STATE UPDATED: ${prevState} >> ${task.Task_state}`);
-        }
-    }
-}, [task]);
-
-  // This useEffect will run after the task state has been updated.
-  /*useEffect(() => {
-    if (task && task.Task_state) {
-        appendToNotesHistory(`STATE UPDATED: OPEN >> ${task.Task_state}`);
-    }
-  }, [task]);
-
-  const handleWorkOnTask = async () => {
-    if (task.Task_state !== "TODO") {
-      alert("This task cannot be worked on until it is in the 'TO-DO' state.");
-      return;
-    }
-
-    try {
-      const updatedState = "DOING";
       const response = await axios.put(
         "http://localhost:8080/updateTaskState",
         {
           Task_id: taskId,
-          Task_state: updatedState,
+          Task_state: newState,
           Task_app_Acronym: appAcronym
         },
         { withCredentials: true }
@@ -293,158 +119,100 @@ export default function UpdateTasks() {
       if (response.data.status === "success") {
         setTask((prevTask) => ({
           ...prevTask,
-          Task_state: updatedState
+          Task_state: newState
         }));
-        appendToNotesHistory(`STATE UPDATED: ${prevTask.Task_state} >> DOING`);
-        alert("Task state updated successfully.");
+        alert(`Task state updated to ${newState}.`);
+        appendToNotesHistory(`STATE UPDATED: ${task.Task_state} >> ${newState}`, task.Task_plan);
       } else {
         console.error("Error updating task state:", response.data.message);
+        alert(`Error: ${response.data.message}`);
       }
     } catch (error) {
       console.error("Error updating task state:", error);
+      alert("An error occurred while updating the task state.");
     }
+  };
+
+  // Generalized Task State Transition Handler
+  const handleTaskStateTransition = async (targetState, validStates, alertMessage, currentState) => {
+    if (!validStates.includes(currentState)) {
+      alert(alertMessage);
+      return;
+    }
+
+    // Call the function that will update the state in your database
+    await updateTaskState(targetState);
+  };
+
+  // Task-specific handlers using the generalized handler
+  const handleReleaseTask = async () => {
+    await handleTaskStateTransition("TODO", ["OPEN"], "Only tasks in OPEN state can be released.", task.Task_state);
+  };
+
+  const handleWorkOnTask = async () => {
+    await handleTaskStateTransition("DOING", ["TODO"], "This task cannot be worked on until it is in the 'TO-DO' state.", task.Task_state);
   };
 
   const handleReturnToTodo = async () => {
-    if (task.Task_state !== "DOING") {
-      alert("Only tasks in DOING state can be returned to TODO.");
-      return;
-    }
-  
-    try {
-      const updatedState = "TODO"; // Changing task state back to TODO
-      const response = await axios.put(
-        "http://localhost:8080/updateTaskState",
-        {
-          Task_id: taskId,
-          Task_state: updatedState,
-          Task_app_Acronym: appAcronym
-        },
-        {
-          withCredentials: true // ✅ Ensures cookies (authToken) are sent
-        }
-      );
-  
-      if (response.data.status === "success") {
-        // Reflect the change in UI
-        setTask((prevTask) => ({
-          ...prevTask,
-          Task_state: updatedState
-        }));
-  
-        // Log the state change in notes history
-        appendToNotesHistory(`STATE UPDATED: ${prevTaskq.Task_state} >> TODO`);
-  
-        alert("Task state updated successfully.");
-      } else {
-        alert(`Error: ${response.data.message}`);
-        console.error("Error updating task state:", response.data.message);
-      }
-    } catch (error) {
-      alert("An error occurred while updating the task state.");
-      console.error("Error updating task state:", error);
-    }
-  };  
+    await handleTaskStateTransition("TODO", ["DOING"], "Only tasks in DOING state can be returned to TODO.", task.Task_state);
+  };
 
-  // Function to handle the task state change
   const handleSeekApproval = async () => {
-    if (task.Task_state !== "DOING") {
-      alert("Only tasks in DOING state can be marked as DONE.");
-      return;
-    }
-  
-    try {
-      const updatedState = "DONE"; // Changing task state to DONE
-      const response = await axios.put(
-        "http://localhost:8080/updateTaskState", // Your API endpoint
-        {
-          Task_id: taskId, // Task ID from the task object
-          Task_state: updatedState, // The new state (DONE)
-          Task_app_Acronym: appAcronym // Your app acronym
-        },
-        {
-          withCredentials: true // Ensures cookies (authToken) are sent
-        }
-      );
-  
-      if (response.data.status === "success") {
-        // Reflect the change in UI
-        setTask((prevTask) => ({
-          ...prevTask,
-          Task_state: updatedState
-        }));
-  
-        // Log the state change in notes history
-        appendToNotesHistory(`STATE UPDATED: ${prevTask.Task_state} >> DONE`);
-  
-        alert("Task state updated to DONE.");
-      } else {
-        alert(`Error: ${response.data.message}`);
-        console.error("Error updating task state:", response.data.message);
-      }
-    } catch (error) {
-      alert("An error occurred while updating the task state.");
-      console.error("Error updating task state:", error);
-    }
-  };  
+    await handleTaskStateTransition("DONE", ["DOING"], "Only tasks in DOING state can be marked as DONE.", task.Task_state);
+  };
 
   const handleRejectTask = async () => {
-    if (task.Task_state !== "DONE") {
-      alert("Only tasks in DONE state can be rejected.");
-      return;
-    }
-
-    try {
-      const updatedState = "DOING"; // Changing task state from DONE to DOING
-      const response = await axios.put("http://localhost:8080/updateTaskState", {
-        Task_id: taskId,
-        Task_state: updatedState,
-        Task_app_Acronym: appAcronym
-      }, { withCredentials: true });
-
-      if (response.data.status === "success") {
-        setTask((prevTask) => ({
-          ...prevTask,
-          Task_state: updatedState
-        }));
-        appendToNotesHistory(`STATE UPDATED: ${prevTask.Task_state} >> DOING`);
-        alert("Task state updated successfully.");
-      } else {
-        console.error("Error updating task state:", response.data.message);
-      }
-    } catch (error) {
-      console.error("Error updating task state:", error);
-    }
+    await handleTaskStateTransition("DOING", ["DONE"], "Only tasks in DONE state can be rejected.", task.Task_state);
   };
 
   const handleApproveTask = async () => {
-    if (task.Task_state !== "DONE") {
-      alert("Only tasks in DONE state can be approved.");
-      return;
-    }
+    await handleTaskStateTransition("CLOSED", ["DONE"], "Only tasks in DONE state can be approved.", task.Task_state);
+  };
 
-    try {
-      const updatedState = "CLOSED"; // Changing task state from DONE to CLOSED
-      const response = await axios.put("http://localhost:8080/updateTaskState", {
-        Task_id: taskId,
-        Task_state: updatedState,
-        Task_app_Acronym: appAcronym
-      }, { withCredentials: true });
+  // useEffect to update task state in notes history
+  useEffect(() => {
+    if (task && task.Task_state) {
+      let prevState = "";
 
-      if (response.data.status === "success") {
-        setTask((prevTask) => ({
-          ...prevTask,
-          Task_state: updatedState
-        }));
-        appendToNotesHistory(`STATE UPDATED: ${prevTask.Task_state} >> CLOSED`);
-        alert("Task state updated to CLOSED.");
-      } else {
-        console.error("Error updating task state:", response.data.message);
+      console.log("Current Task State:", task.Task_state); // Debugging log for task state
+
+      // Handle transitions based on the current state
+      switch (task.Task_state) {
+        case "TODO":
+          prevState = "DOING";  // Transitioning to TODO from DOING
+          break;
+        case "DOING":
+          prevState = "TODO";  // Transitioning to DOING from TODO
+          break;
+        case "CLOSED":
+          prevState = "DONE";  // Transitioning to CLOSED from DONE
+          break;
+        case "DONE":
+          prevState = "DOING";  // Transitioning to DOING from DONE
+          break;
+        case "OPEN":
+          prevState = "OPEN";  // Explicit handling for OPEN >> TODO
+          break;
+        default:
+          prevState = "";
+          break;
       }
-    } catch (error) {
-      console.error("Error updating task state:", error);
+
+      // Explicitly handle OPEN >> TODO transition
+      if (prevState === "OPEN" && task.Task_state === "TODO") {
+        prevState = "OPEN";  // Correctly transition from OPEN to TODO
+      }
+
+      console.log("Previous State:", prevState); // Debugging log for previous state
+
+      // Now we append to the notes history only if there is a valid previous state
+      if (prevState && prevState !== task.Task_state) {
+        console.log(`Appending to notes history: STATE UPDATED: ${prevState} >> ${task.Task_state}`);
+        appendToNotesHistory(`STATE UPDATED: ${prevState} >> ${task.Task_state}`, task.Task_plan);
+      }
     }
-  };*/
+  }, [task]);
+      
 
   const handlePlanChange = () => {
     if (selectedPlan !== task.Task_plan) {
