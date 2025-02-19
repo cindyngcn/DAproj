@@ -101,6 +101,7 @@ export default function UpdateTasks() {
       return updatedHistory;  // Return the updated notes history
     });
   };
+
   // Generalized State Update Logic
   const updateTaskState = async (newState) => {
     try {
