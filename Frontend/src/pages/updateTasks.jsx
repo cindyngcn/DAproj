@@ -13,11 +13,11 @@ export default function UpdateTasks() {
   const [username, setUsername] = useState(""); // Store the logged-in username
   //Edited here
   const [userPermissions, setUserPermissions] = useState({
-    canCreate: false,
-    canOpen: false,
-    canToDo: false,
-    canDoing: false,
-    canDone: false,
+    Create: false,
+    Open: false,
+    ToDo: false,
+    Doing: false,
+    Done: false,
   });
 
   useEffect(() => {
@@ -79,7 +79,7 @@ export default function UpdateTasks() {
     };
 
     // Fetch user permissions
-    const fetchUserPermissions = async () => {
+    /*const fetchUserPermissions = async () => {
       try {
         const response = await axios.post(
           "http://localhost:8080/checkPermits",
@@ -93,6 +93,33 @@ export default function UpdateTasks() {
             canToDo: response.data.permissions.ToDo || false,
             canDoing: response.data.permissions.Doing || false,
             canDone: response.data.permissions.Done || false,
+          });
+        } else {
+          console.error("Error fetching user permissions:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching permissions:", error);
+      }
+    };*/
+
+    const fetchUserPermissions = async () => {
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/checkPermits",
+          { App_Acronym: appAcronym },
+          { withCredentials: true }
+        );
+        
+        console.log("Permissions Response:", response.data);  // Add this log to inspect the response
+        console.log("App Acronym:", appAcronym);  // Check if it's defined correctly
+    
+        if (response.data.status === "success" && response.data.userPermissions) {
+          setUserPermissions({
+            Create: response.data.userPermissions.Create || false,
+            Open: response.data.userPermissions.Open || false,
+            ToDo: response.data.userPermissions.ToDo || false,
+            Doing: response.data.userPermissions.Doing || false,
+            Done: response.data.userPermissions.Done || false,
           });
         } else {
           console.error("Error fetching user permissions:", response.data.message);
@@ -427,9 +454,14 @@ const conditionalButtons = () => {
       App_Permit_Create: true/false
     }
   }*/
+
+  console.log("cond: userPermissions:", userPermissions);
+  console.log("task state:", task.Task_state);
+    
   return (
     <div style={{ display: "flex", gap: "20px", marginTop: "30px" }}>
-      {task.Task_state === "OPEN" &&(
+      {console.log("can user release task??:", userPermissions.Open)} 
+      {task.Task_state === "OPEN" && userPermissions.Open && (
         <button
           onClick={handleReleaseTask}
           style={{
@@ -445,7 +477,7 @@ const conditionalButtons = () => {
         </button>
       )}
 
-      {task.Task_state === "TODO" && (
+      {task.Task_state === "TODO" && userPermissions.ToDo &&(
         <button
           onClick={handleWorkOnTask}
           style={{
@@ -461,7 +493,7 @@ const conditionalButtons = () => {
         </button>
       )}
 
-      {task.Task_state === "DOING" && (
+      {task.Task_state === "DOING" && userPermissions.Doing &&(
         <>
           <button
             onClick={handleReturnToTodo} // New function for "Return Task to TODO"
@@ -505,7 +537,7 @@ const conditionalButtons = () => {
         </>
       )}
 
-      {task.Task_state === "DONE" && (
+      {task.Task_state === "DONE" && userPermissions.Done &&(
         <div>
           <button
             onClick={handleRejectTask} // Function to reject the task
