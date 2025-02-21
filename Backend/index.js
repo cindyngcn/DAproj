@@ -46,6 +46,7 @@ const createTaskRouter = require('./Routers/createTaskRouter.js');
 const getTaskRouter = require('./Routers/getTaskRouter.js');
 const updateTaskRouter = require('./Routers/updateTaskRouter.js');
 const updateTaskStateRouter = require('./Routers/updateTaskStateRouter.js');
+const UserAppPermitRouter = require('./Routers/UserAppPermitRouter.js');
 
 // Over-splitting - e.g. 1 for task, 1 for authentication
 app.use('/createUser', createUserRouter);
@@ -62,6 +63,7 @@ app.use('/createTask', createTaskRouter);
 app.use('/getTask', getTaskRouter);
 app.use('/updateTask', updateTaskRouter);
 app.use('/updateTaskState', updateTaskStateRouter);
+app.use('/checkPermits', UserAppPermitRouter);
 
 app.get('/user', (req, res) => {
   const token = req.cookies.authToken;  // Ensure correct cookie name
@@ -214,6 +216,60 @@ app.get('/getPL', (req, res) => {
     });
   });
 });
+
+//Getting PM
+app.get('/getPM', (req, res) => {
+  const token = req.cookies.authToken;
+
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized. No token provided.' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Invalid or expired token.' });
+    }
+
+    const username = decoded.username;
+
+    const query = 'SELECT username, email FROM user WHERE username = ?';
+    connection.query(query, [username], (err, results) => {
+      if (err) {
+        console.error('Error querying the database:', err);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+
+      if (results.length > 0) {
+        const user = results[0]; // Assuming the username is unique, we take the first result
+        
+        // Check if the user is an PM by querying the user_group table
+        const PMCheckQuery = 'SELECT * FROM user_group WHERE user_group_username = ? AND user_group_groupName = "PM"';
+        connection.query(PMCheckQuery, [username], (err, PMResults) => {
+          if (err) {
+            console.error('Error checking PM status:', err);
+            return res.status(500).json({ message: 'Failed to check PM status' });
+          }
+
+          const isPM = PMResults.length > 0 ; 
+
+          res.json({
+            username: user.username,
+            email: user.email || "",  // Send email, or empty string if not set
+            isPM: isPM,         // Send isPM flag
+          });
+        });
+      } else {
+        res.status(404).json({ message: 'User not found' });
+      }
+    });
+  });
+});
+
+/*app.get("/checkPermits", Permits, (req, res) => {
+  
+  // If the request reaches this point, it means the user has permission
+  res.status(200).json({ message: "Permission granted." });
+});*/
 
 // Start server
 app.listen(8080, () => {

@@ -1,31 +1,3 @@
-// permission.js
-/*const jwt = require('jsonwebtoken');
-
-// Middleware to check if the user is an admin
-const adminMiddleware = (req, res, next) => {
-  const token = req.cookies.authToken;  // Get the token from cookies
-
-  if (!token) {
-    return res.status(401).json({ status: 'error', message: 'No token provided. Access denied.' });
-  }
-
-  // Verify the token
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ status: 'error', message: 'Invalid or expired token.' });
-    }
-
-    // Check if the user is an admin
-    if (decoded.isAdmin) {
-      next(); // Proceed to the next middleware or route handler
-    } else {
-      return res.status(403).json({ status: 'error', message: 'Access denied. You are not an admin.' });
-    }
-  });
-};
-
-module.exports = { adminMiddleware };*/
-
 const mysql = require("mysql2");
 const jwt = require("jsonwebtoken");
 
@@ -107,5 +79,29 @@ const plMiddleware = async (req, res, next) => {
   }
 };
 
-module.exports = { adminMiddleware, plMiddleware, checkGroup };
+// Middleware to check if a user belongs to the "PM" group
+const pmMiddleware = async (req, res, next) => {
+  const token = req.cookies.authToken; // Get the token from cookies
+
+  if (!token) {
+    return res.status(401).json({ status: "error", message: "No token provided. Access denied." });
+  }
+
+  try {
+    // Check if the user is in the "PM" group
+    const isPM = await checkGroup(req.user, "PM");
+
+    if (isPM) {
+      next(); // Proceed to the next middleware or route handler
+    } else {
+      return res.status(403).json({ status: "error", message: "Access denied. You are not in the PM group." });
+    }
+  } catch (error) {
+    console.error('Error checking PM group:', error);
+
+    return res.status(500).json({ status: "error", message: "Internal server error." });
+  }
+};
+
+module.exports = { adminMiddleware, plMiddleware, pmMiddleware, checkGroup };
 

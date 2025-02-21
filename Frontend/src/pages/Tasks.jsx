@@ -13,8 +13,21 @@ export default function Tasks() {
   const [planMVPName, setPlanMVPName] = useState(""); // New state for MVP Name
   const [planColor, setPlanColor] = useState(""); // New state for Plan Color
   const [tasks, setTasks] = useState([]); // Store tasks
+  const [isPL, setIsPL] = useState(false);
+  const [isPM, setIsPM] = useState(false);
 
   const taskStates = ["OPEN", "TODO", "DOING", "DONE", "CLOSED"];
+
+  //Edited here
+  /*const [userPermissions, setUserPermissions] = useState({
+    Create: false,
+    Open: false,
+    ToDo: false,
+    Doing: false,
+    Done: false,
+  });*/
+
+  const [userPermissions, setUserPermissions] = useState({});
 
   const handleCreatePlan = async () => {
     try {
@@ -40,6 +53,90 @@ export default function Tasks() {
   };
 
   useEffect(() => {
+    const fetchUserGroups = async () => {
+      try {
+        // Call the new endpoint that provides the 'isPL' field
+        const response = await axios.get("http://localhost:8080/getPL", { withCredentials: true });
+    
+        if (response.data && response.data.isPL !== undefined) {
+          // If the 'isPL' field is returned, update the state accordingly
+          setIsPL(response.data.isPL);
+        }
+      } catch (error) {
+        console.error("Error fetching user groups:", error);
+      }
+    }; 
+
+    fetchUserGroups();
+
+    const fetchPM = async () => {
+      try {
+        // Call the new endpoint that provides the 'isPL' field
+        const response = await axios.get("http://localhost:8080/getPM", { withCredentials: true });
+    
+        if (response.data && response.data.isPM !== undefined) {
+          // If the 'isPL' field is returned, update the state accordingly
+          setIsPM(response.data.isPM);
+        }
+      } catch (error) {
+        console.error("Error fetching user groups:", error);
+      }
+    }; 
+
+    fetchPM();
+
+    /*const fetchUserPermissions = async () => {
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/checkPermits",
+          { App_Acronym: appAcronym },
+          { withCredentials: true }
+        );
+        if (response.data.status === "success") {
+          setUserPermissions({
+            canCreate: response.data.permissions.Create || false,
+            canOpen: response.data.permissions.Open || false,
+            canToDo: response.data.permissions.ToDo || false,
+            canDoing: response.data.permissions.Doing || false,
+            canDone: response.data.permissions.Done || false,
+          });
+        } else {
+          console.error("Error fetching user permissions:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching permissions:", error);
+      }
+    };*/
+    const fetchUserPermissions = async () => {
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/checkPermits",
+          { App_Acronym: appAcronym },
+          { withCredentials: true }
+        );
+    
+        console.log("Permissions Response:", response.data);  // Add this log to inspect the response
+        console.log("App Acronym:", appAcronym);  // Check if it's defined correctly
+    
+        // Update the check for the permissions based on the correct structure
+        if (response.data.status === "success" && response.data.userPermissions) {
+          setUserPermissions({
+            Create: response.data.userPermissions.Create,
+            Open: response.data.userPermissions.Open,
+            ToDo: response.data.userPermissions.ToDo,
+            Doing: response.data.userPermissions.Doing,
+            Done: response.data.userPermissions.Done,
+          });
+        } else {
+          console.error("Error fetching user permissions:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching permissions:", error);
+      }
+    };
+    
+    fetchUserPermissions();
+
     const fetchTasksAndColors = async () => {
       try {
         // Fetch tasks for the current appAcronym
@@ -104,7 +201,7 @@ export default function Tasks() {
       <h1 style={{ marginLeft: '20px' }}>Task Board - {appAcronym}</h1>
 
       {/* Create Plan UI */}
-      <div style={{ marginLeft: '20px', marginBottom: '20px' }}>
+      {isPM && <div style={{ marginLeft: '20px', marginBottom: '20px' }}>
         <strong>Plan:</strong>
         <TextField
           name="Plan_app_Acronym"
@@ -150,15 +247,17 @@ export default function Tasks() {
         >
           CREATE
         </Button>
-      </div>
+      </div>}
 
       {/* Create Task Button */}
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        {console.log("User can create task:", userPermissions.Create)} 
+        {userPermissions.Create && (
           <Link to={`/createTask/${appAcronym}`} style={{ textDecoration: 'none' }}>
             <Button variant="contained" style={{ backgroundColor: '#007bff', color: 'white', padding: '10px 20px', fontSize: '16px', borderRadius: '8px', boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)' }}>
               + Create Task
             </Button>
-          </Link>
+          </Link>)}
         </div>
   
         {/* Kanban Board */}

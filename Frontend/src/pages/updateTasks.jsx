@@ -11,6 +11,14 @@ export default function UpdateTasks() {
   const [notesHistory, setNotesHistory] = useState("");
   const [newNote, setNewNote] = useState("");
   const [username, setUsername] = useState(""); // Store the logged-in username
+  //Edited here
+  const [userPermissions, setUserPermissions] = useState({
+    canCreate: false,
+    canOpen: false,
+    canToDo: false,
+    canDoing: false,
+    canDone: false,
+  });
 
   useEffect(() => {
     // Fetch task details
@@ -68,11 +76,36 @@ export default function UpdateTasks() {
       } catch (error) {
         console.error("Error fetching username:", error);
       }
-    };     
+    };
+
+    // Fetch user permissions
+    const fetchUserPermissions = async () => {
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/checkPermits",
+          { App_Acronym: appAcronym },
+          { withCredentials: true }
+        );
+        if (response.data.status === "success") {
+          setUserPermissions({
+            canCreate: response.data.permissions.Create || false,
+            canOpen: response.data.permissions.Open || false,
+            canToDo: response.data.permissions.ToDo || false,
+            canDoing: response.data.permissions.Doing || false,
+            canDone: response.data.permissions.Done || false,
+          });
+        } else {
+          console.error("Error fetching user permissions:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching permissions:", error);
+      }
+    };
 
     fetchTaskDetails();
     fetchPlans();
     fetchUsername();
+    fetchUserPermissions();
   }, [appAcronym, taskId]);
 
   // Function to append log to notes history
@@ -110,7 +143,8 @@ export default function UpdateTasks() {
         {
           Task_id: taskId,
           Task_state: newState,
-          Task_app_Acronym: appAcronym
+          Task_app_Acronym: appAcronym,
+          currentState: task.Task_state
         },
         { withCredentials: true }
       );
@@ -227,6 +261,316 @@ export default function UpdateTasks() {
     }
   };
 
+const renderTaskName = () => {
+  return(
+    <div style={{ flex: "1" }}>
+      <label style={{ fontWeight: "600" }}>Task Name:</label>
+      <input
+        type="text"
+        value={task.Task_name}
+        readOnly
+        style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }}
+      />
+    </div>
+  )
+} 
+
+const renderTaskState = () => {
+  return (
+    <div style={{ flex: "1" }}>
+      <label style={{ fontWeight: "600" }}>Task State:</label>
+      {/* Display Task State as Read-Only */}
+      <div
+        style={{
+          padding: "10px",
+          borderRadius: "5px",
+          border: "1px solid #ccc",
+          width: "100%",
+          backgroundColor: "#f9f9f9",
+          textAlign: "center"
+        }}
+      >
+        {task.Task_state}
+      </div>
+    </div>
+  )
+}
+
+const renderTaskID = () => {
+  return (
+    <div>
+      <label style={{ fontWeight: "600" }}>Task ID:</label>
+      <input
+        type="text"
+        value={taskId}
+        readOnly
+        style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }}
+      />
+    </div>
+  )
+}
+
+const renderTaskPlan = () => {
+  if (task.Task_state !== "OPEN" && task.Task_state !== "DONE"){
+    return (
+     <div>
+      <label style={{ fontWeight: "600" }}>Plan:</label>
+      <select
+        value={selectedPlan}
+        onChange={(e) => setSelectedPlan(e.target.value)}
+        style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }}
+        disabled
+      >
+        <option value="">Select a Plan</option>
+        {plans.map((plan) => (
+          <option key={plan.Plan_MVP_name} value={plan.Plan_MVP_name}>{plan.Plan_MVP_name}</option>
+        ))}
+      </select>
+     </div>
+    );
+  };
+
+  return (
+    <div>
+      <label style={{ fontWeight: "600" }}>Plan:</label>
+      <select
+        value={selectedPlan}
+        onChange={(e) => setSelectedPlan(e.target.value)}
+        style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }}
+      >
+        <option value="">Select a Plan</option>
+        {plans.map((plan) => (
+          <option key={plan.Plan_MVP_name} value={plan.Plan_MVP_name}>{plan.Plan_MVP_name}</option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+const renderTaskDescription = () => {
+  return (
+    <div>
+      <label style={{ fontWeight: "600" }}>Description:</label>
+      <textarea
+        value={task.Task_description}
+        readOnly
+        style={{ padding: "10px", resize: "vertical", borderRadius: "5px", border: "1px solid #ccc", width: "100%", minHeight: "120px" }}
+      ></textarea>
+    </div>
+  )
+}
+
+const renderNotesHistory = () => {
+  return (
+    <div>
+      <label style={{ fontWeight: "600" }}>Notes History:</label>
+      <div
+        style={{
+          maxHeight: "200px",
+          overflowY: "auto",   // Allow vertical scrolling 
+          resize: "vertical",
+          padding: "10px",
+          borderRadius: "5px",
+          border: "1px solid #ccc",
+          width: "100%",
+          background: "#f9f9f9",
+          whiteSpace: "pre-wrap" // Ensures line breaks are preserved
+        }}
+      >
+        {notesHistory.split('\n').map((line, index) => {
+          // Check if the line contains the "STATE UPDATED" phrase and change color
+          if (line.includes('STATE UPDATED')) {
+            return <div key={index} style={{ color: '#2832C2' }}>{line}</div>;
+          }
+          // Check if the line contains the plan change message
+          if (line.includes('UPDATED_PLAN')) {
+            return <span key={index} style={{ color: '#2AAA8A' }}>{line}</span>;
+          } else {
+            return <div key={index}>{line}</div>;
+          }
+        })}
+      </div>
+    </div>
+  )
+}
+
+const renderNewNote = () => {
+  if (task.Task_state === "CLOSED"){
+    return (
+      <div>
+      <textarea
+        placeholder="Enter note"
+        value={newNote}
+        readOnly
+        style={{ minHeight: "80px", resize: "vertical", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }}
+      ></textarea>
+    </div>
+    )
+  }
+  return (
+    <div>
+      <textarea
+        placeholder="Enter note"
+        value={newNote}
+        onChange={(e) => setNewNote(e.target.value)}
+        style={{ minHeight: "80px", resize: "vertical", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }}
+      ></textarea>
+    </div>
+  )
+}
+
+const conditionalButtons = () => {
+  //e.g. if you are given permissions in the "OPEN" state, need to make that Task_state ="OPEN" and u are in that particular group
+  //need to design an endpoint that takes in all App_Acronym and output the App_Permit_* 
+  /*permits={
+    App_Acronym: {
+      App_Permit_Create: true/false
+    }
+  }*/
+  return (
+    <div style={{ display: "flex", gap: "20px", marginTop: "30px" }}>
+      {task.Task_state === "OPEN" &&(
+        <button
+          onClick={handleReleaseTask}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#28a745",
+            border: "none",
+            borderRadius: "5px",
+            color: "#fff",
+            cursor: "pointer"
+          }}
+        >
+          Release Task
+        </button>
+      )}
+
+      {task.Task_state === "TODO" && (
+        <button
+          onClick={handleWorkOnTask}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#007bff",
+            border: "none",
+            borderRadius: "5px",
+            color: "#fff",
+            cursor: "pointer"
+          }}
+        >
+          Work On Task
+        </button>
+      )}
+
+      {task.Task_state === "DOING" && (
+        <>
+          <button
+            onClick={handleReturnToTodo} // New function for "Return Task to TODO"
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#ffc107", // Yellow for Return button
+              border: "none",
+              borderRadius: "5px",
+              color: "#fff",
+              cursor: "pointer"
+            }}
+          >
+            Return Task to TODO
+          </button>
+          <button
+            onClick={handleSeekApproval} // Function to change state to DONE
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#17a2b8", // Info color
+              border: "none",
+              borderRadius: "5px",
+              color: "#fff",
+              cursor: "pointer"
+            }}
+          >
+            Seek Approval
+          </button>
+          <button
+            onClick={() => alert("Request for Deadline Extension clicked")} // Placeholder for Request for Deadline Extension
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#dc3545", // Danger color
+              border: "none",
+              borderRadius: "5px",
+              color: "#fff",
+              cursor: "pointer"
+            }}
+          >
+            Request for Deadline Extension
+          </button>
+        </>
+      )}
+
+      {task.Task_state === "DONE" && (
+        <div>
+          <button
+            onClick={handleRejectTask} // Function to reject the task
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#dc3545", // Red for Reject button
+              border: "none",
+              borderRadius: "5px",
+              color: "#fff",
+              cursor: "pointer"
+            }}
+          >
+            Reject Task
+          </button>
+          <button
+            onClick={handleApproveTask} // Function to approve the task
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#28a745", // Green for Approve button
+              border: "none",
+              borderRadius: "5px",
+              color: "#fff",
+              cursor: "pointer"
+            }}
+          >
+            Approve Task
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const saveChangesButton = () => {
+  if (task.Task_state === "CLOSED"){
+    return null;
+  } 
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "30px" }}>
+      <button
+        style={{
+          background: "#3e52ff",
+          color: "white",
+          padding: "12px 20px",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+          width: "48%"
+        }}
+        onClick={() => {
+          handlePlanChange(selectedPlan);  // Now it runs only when saving
+          handleNewNote();
+        }}
+      >
+        Save Changes
+      </button>
+    </div>
+  )
+}
+
+
+  if (task === null) {
+    return null;
+  }
+
   return (
     <div style={{ width: "100%", height: "100vh", margin: "0", padding: "20px", background: "#f9f9f9", display: "flex", justifyContent: "center", alignItems: "center" }}>
       <div style={{ width: "80%", maxWidth: "1200px", padding: "30px", borderRadius: "10px", background: "white", boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)" }}>
@@ -237,257 +581,42 @@ export default function UpdateTasks() {
           &lt; Back
         </button>
     
-        {task && (
+     
           <form style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
             {/* Left Section (Task Details) */}
             <div style={{ flex: "1", minWidth: "300px", display: "flex", flexDirection: "column", gap: "15px" }}>
               {/* Task Name and Task State */}
               <div style={{ display: "flex", gap: "20px", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ flex: "1" }}>
-                  <label style={{ fontWeight: "600" }}>Task Name:</label>
-                  <input 
-                    type="text" 
-                    value={task.Task_name} 
-                    readOnly 
-                    style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }} 
-                  />
-                </div>
-                <div style={{ flex: "1" }}>
-                  <label style={{ fontWeight: "600" }}>Task State:</label>
-                  {/* Display Task State as Read-Only */}
-                  <div 
-                    style={{ 
-                      padding: "10px", 
-                      borderRadius: "5px", 
-                      border: "1px solid #ccc", 
-                      width: "100%", 
-                      backgroundColor: "#f9f9f9", 
-                      textAlign: "center" 
-                    }}
-                  >
-                    {task.Task_state}
-                  </div>
-                </div>
+                {renderTaskName()}
+                {renderTaskState()}
               </div>
 
               {/* Task ID */}
-              <div>
-                <label style={{ fontWeight: "600" }}>Task ID:</label>
-                <input 
-                  type="text" 
-                  value={taskId} 
-                  readOnly 
-                  style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }} 
-                />
-              </div>
+              {renderTaskID()}
 
               {/* Task Plan */}
-              <div>
-                <label style={{ fontWeight: "600" }}>Plan:</label>
-                <select 
-                  value={selectedPlan} 
-                  onChange={(e) => setSelectedPlan(e.target.value)} 
-                  style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }}
-                >
-                  <option value="">Select a Plan</option>
-                  {plans.map((plan) => (
-                    <option key={plan.Plan_MVP_name} value={plan.Plan_MVP_name}>{plan.Plan_MVP_name}</option>
-                  ))}
-                </select>
-              </div>
+              {renderTaskPlan()}
 
               {/* Task Description */}
-              <div>
-                <label style={{ fontWeight: "600" }}>Description:</label>
-                <textarea 
-                  value={task.Task_description} 
-                  readOnly 
-                  style={{ padding: "10px", resize: "vertical", borderRadius: "5px", border: "1px solid #ccc", width: "100%", minHeight: "120px" }} 
-                ></textarea>
-              </div>
+              {renderTaskDescription()}
 
               {/* Conditional Buttons for Task State */}
-              <div style={{ display: "flex", gap: "20px", marginTop: "30px" }}>
-              {task.Task_state === "OPEN" && (
-                <button 
-                  onClick={handleReleaseTask}
-                  style={{
-                    padding: "10px 20px",
-                    backgroundColor: "#28a745",
-                    border: "none",
-                    borderRadius: "5px",
-                    color: "#fff",
-                    cursor: "pointer"
-                  }}
-                >
-                  Release Task
-                </button>
-              )}
+              {conditionalButtons()}
 
-              {task.Task_state === "TODO" && (
-                <button 
-                  onClick={handleWorkOnTask}
-                  style={{
-                    padding: "10px 20px",
-                    backgroundColor: "#007bff",
-                    border: "none",
-                    borderRadius: "5px",
-                    color: "#fff",
-                    cursor: "pointer"
-                  }}
-                >
-                  Work On Task
-                </button>
-              )}
-
-              {task.Task_state === "DOING" && (
-                <>
-                  <button 
-                    onClick={handleReturnToTodo} // New function for "Return Task to TODO"
-                    style={{
-                      padding: "10px 20px",
-                      backgroundColor: "#ffc107", // Yellow for Return button
-                      border: "none",
-                      borderRadius: "5px",
-                      color: "#fff",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Return Task to TODO
-                  </button>
-                  <button 
-                    onClick={handleSeekApproval} // Function to change state to DONE
-                    style={{
-                      padding: "10px 20px",
-                      backgroundColor: "#17a2b8", // Info color
-                      border: "none",
-                      borderRadius: "5px",
-                      color: "#fff",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Seek Approval
-                  </button>
-                  <button 
-                    onClick={() => alert("Request for Deadline Extension clicked")} // Placeholder for Request for Deadline Extension
-                    style={{
-                      padding: "10px 20px",
-                      backgroundColor: "#dc3545", // Danger color
-                      border: "none",
-                      borderRadius: "5px",
-                      color: "#fff",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Request for Deadline Extension
-                  </button>
-                </>
-              )}
-
-              {task.Task_state === "DONE" && (
-                <div>
-                  <button 
-                    onClick={handleRejectTask} // Function to reject the task
-                    style={{
-                      padding: "10px 20px",
-                      backgroundColor: "#dc3545", // Red for Reject button
-                      border: "none",
-                      borderRadius: "5px",
-                      color: "#fff",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Reject Task
-                  </button>
-                  <button 
-                    onClick={handleApproveTask} // Function to approve the task
-                    style={{
-                      padding: "10px 20px",
-                      backgroundColor: "#28a745", // Green for Approve button
-                      border: "none",
-                      borderRadius: "5px",
-                      color: "#fff",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Approve Task
-                  </button>
-                </div>
-              )}
-              </div>
-
-              {task.Task_state === "CLOSED" && (
-                <div style={{ padding: "20px", fontStyle: "italic", color: "#6c757d" }}>
-                </div>
-              )}
             </div>
 
             {/* Right Section (Notes History and New Note Input) */}
             <div style={{ flex: "1", minWidth: "300px", display: "flex", flexDirection: "column", gap: "15px" }}>
               {/* Notes History */}
-              <div>
-                <label style={{ fontWeight: "600" }}>Notes History:</label>
-                <div
-                  style={{
-                    maxHeight: "200px",
-                    overflowY: "auto",   // Allow vertical scrolling 
-                    resize: "vertical", 
-                    padding: "10px", 
-                    borderRadius: "5px", 
-                    border: "1px solid #ccc", 
-                    width: "100%", 
-                    background: "#f9f9f9", 
-                    whiteSpace: "pre-wrap" // Ensures line breaks are preserved
-                  }}
-                >
-                  {notesHistory.split('\n').map((line, index) => {
-                    // Check if the line contains the "STATE UPDATED" phrase and change color
-                    if (line.includes('STATE UPDATED')) {
-                      return <div key={index} style={{ color: '#2832C2' }}>{line}</div>;
-                    }
-                    // Check if the line contains the plan change message
-                    if (line.includes('UPDATED_PLAN')) {
-                      return <span key={index} style={{ color: '#2AAA8A' }}>{line}</span>;
-                    } else {
-                      return <div key={index}>{line}</div>;
-                    }
-                  })}
-                </div>
-              </div>
+              {renderNotesHistory()}
 
               {/* New Note Input */}
-              <div>
-                <textarea 
-                  placeholder="Enter note" 
-                  value={newNote} 
-                  onChange={(e) => setNewNote(e.target.value)} 
-                  style={{ minHeight: "80px", resize: "vertical", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%" }} 
-                ></textarea>
-              </div>
+              {renderNewNote()}
             </div>
           </form>
-        )}
 
         {/* Buttons */}
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "30px" }}>
-          <button 
-            style={{ 
-              background: "#3e52ff", 
-              color: "white", 
-              padding: "12px 20px", 
-              border: "none", 
-              borderRadius: "5px", 
-              cursor: "pointer", 
-              width: "48%" 
-            }}
-            onClick={() => {
-              handlePlanChange(selectedPlan);  // Now it runs only when saving
-              handleNewNote();
-            }}
-          >
-            Save Changes
-          </button>
-        </div>
+        {saveChangesButton()}
       </div>
     </div>
   );
