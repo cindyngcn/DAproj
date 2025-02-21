@@ -422,6 +422,7 @@ const renderNotesHistory = () => {
 }
 
 const renderNewNote = () => {
+
   if (task.Task_state === "CLOSED"){
     return (
       <div>
@@ -572,6 +573,7 @@ const conditionalButtons = () => {
 }
 
 const saveChangesButton = () => {
+
   if (task.Task_state === "CLOSED"){
     return null;
   } 
