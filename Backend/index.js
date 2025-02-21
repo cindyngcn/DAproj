@@ -167,6 +167,54 @@ app.get('/currentUser', (req, res) => {
   });
 });
 
+//Getting PL
+app.get('/getPL', (req, res) => {
+  const token = req.cookies.authToken;
+
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized. No token provided.' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Invalid or expired token.' });
+    }
+
+    const username = decoded.username;
+
+    const query = 'SELECT username, email FROM user WHERE username = ?';
+    connection.query(query, [username], (err, results) => {
+      if (err) {
+        console.error('Error querying the database:', err);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+
+      if (results.length > 0) {
+        const user = results[0]; // Assuming the username is unique, we take the first result
+        
+        // Check if the user is an PL by querying the user_group table
+        const PLCheckQuery = 'SELECT * FROM user_group WHERE user_group_username = ? AND user_group_groupName = "PL"';
+        connection.query(PLCheckQuery, [username], (err, PLResults) => {
+          if (err) {
+            console.error('Error checking PL status:', err);
+            return res.status(500).json({ message: 'Failed to check PL status' });
+          }
+
+          const isPL = PLResults.length > 0 ; 
+
+          res.json({
+            username: user.username,
+            email: user.email || "",  // Send email, or empty string if not set
+            isPL: isPL,         // Send isPL flag
+          });
+        });
+      } else {
+        res.status(404).json({ message: 'User not found' });
+      }
+    });
+  });
+});
+
 // Start server
 app.listen(8080, () => {
   console.log('Server started on port 8080');

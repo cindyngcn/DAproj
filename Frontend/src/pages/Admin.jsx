@@ -26,6 +26,8 @@ export default function Admin() {
   //const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   //const [errorMessage, setErrorMessage] = useState("");
+  const [userGroups, setUserGroups] = useState([]);
+  const [isPL, setIsPL] = useState(false);
 
   const [showCreateSuccess, setShowCreateSuccess] = useState(false);
   const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
@@ -56,9 +58,37 @@ export default function Admin() {
     }
   };
 
+  /*const fetchUserGroups = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/user", { withCredentials: true });
+      if (response.data && response.data.groups) {
+        setUserGroups(response.data.groups);
+        setIsPL(response.data.groups.includes("PL"));
+      }
+    } catch (error) {
+      console.error("Error fetching user groups:", error);
+    }
+  };*/
+
+  const fetchUserGroups = async () => {
+    try {
+      // Call the new endpoint that provides the 'isPL' field
+      const response = await axios.get("http://localhost:8080/getPL", { withCredentials: true });
+  
+      if (response.data && response.data.isPL !== undefined) {
+        // If the 'isPL' field is returned, update the state accordingly
+        setIsPL(response.data.isPL);
+      }
+    } catch (error) {
+      console.error("Error fetching user groups:", error);
+    }
+  };  
+
   useEffect(() => {
     fetchGroups();
     fetchApplications();
+    fetchUserGroups();
+    console.log("User is in PL group: ", isPL);
   }, []);
 
   const handleNewAppChange = (e) => {
@@ -191,7 +221,8 @@ export default function Admin() {
                 <TableCell style={{ minWidth: "150px" }}>Permit To-Do</TableCell>
                 <TableCell style={{ minWidth: "150px" }}>Permit Doing</TableCell>
                 <TableCell style={{ minWidth: "150px" }}>Permit Done</TableCell>
-                <TableCell style={{ minWidth: "120px" }}>Action</TableCell>
+                {/* edited here*/}
+                {isPL &&<TableCell style={{ minWidth: "120px" }}>Action</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -306,11 +337,11 @@ export default function Admin() {
                     ))}
                   </Select>
                 </TableCell>
-                <TableCell>
+                {isPL &&<TableCell>
                   <Button variant="contained" color="primary" onClick={handleCreateSubmit}>
                     Create
                   </Button>
-                </TableCell>
+                </TableCell>}
               </TableRow>
               {applications.map((app) => (
                 <TableRow key={app.App_Acronym}>
@@ -362,11 +393,11 @@ export default function Admin() {
                       </Select>
                     </TableCell>
                   ))}
-                  <TableCell>
+                  {isPL &&<TableCell>
                     <Button variant="contained" color="primary" onClick={() => handleUpdateSubmit(app)}>
                       Update
                     </Button>
-                  </TableCell>
+                  </TableCell>}
                 </TableRow>
               ))}
             </TableBody>
