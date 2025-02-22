@@ -573,8 +573,15 @@ const conditionalButtons = () => {
 }
 
 const saveChangesButton = () => {
+  const noPermission =
+  !userPermissions ||
+  (task.Task_state === "OPEN" && !userPermissions.Open) ||
+  (task.Task_state === "TODO" && !userPermissions.ToDo) ||
+  (task.Task_state === "DOING" && !userPermissions.Doing) ||
+  (task.Task_state === "DONE" && !userPermissions.Done) ||
+  (task.Task_state === "CLOSED" && !userPermissions.Create);
 
-  if (task.Task_state === "CLOSED"){
+  if (task.Task_state === "CLOSED" || noPermission){
     return null;
   } 
   return (
