@@ -163,35 +163,6 @@ export default function UpdateTasks() {
   };
 
   // Generalized State Update Logic
-  /*const updateTaskState = async (newState) => {
-    try {
-      const response = await axios.put(
-        "http://localhost:8080/updateTaskState",
-        {
-          Task_id: taskId,
-          Task_state: newState,
-          Task_app_Acronym: appAcronym,
-          currentState: task.Task_state
-        },
-        { withCredentials: true }
-      );
-
-      if (response.data.status === "success") {
-        setTask((prevTask) => ({
-          ...prevTask,
-          Task_state: newState
-        }));
-        alert(`Task state updated to ${newState}.`);
-        appendToNotesHistory(`STATE UPDATED: ${task.Task_state} >> ${newState}`, task.Task_plan);
-      } else {
-        console.error("Error updating task state:", response.data.message);
-        alert(`Error: ${response.data.message}`);
-      }
-    } catch (error) {
-      console.error("Error updating task state:", error);
-      alert("An error occurred while updating the task state.");
-    }
-  };*/
   const updateTaskState = async (newState) => {
     try {
       const response = await axios.put(
@@ -214,18 +185,31 @@ export default function UpdateTasks() {
         appendToNotesHistory(`STATE UPDATED: ${task.Task_state} >> ${newState}`, task.Task_plan);
   
         // Trigger email only if the state changes to 'DONE'
-        if (newState === "DONE") {
-          await axios.post(
-            "http://localhost:8080/emails",
-            {
-              Task_id: taskId,
-              Task_name: task.Task_name,
-              newState: newState
-            },
-            { withCredentials: true }
-          );
-          console.log("Email response:", emailResponse.data);
-        }
+            if (newState === "DONE") {
+              console.log("new state after email:", newState);
+            
+              // Define the request payload
+              const requestPayload = {
+                Task_id: taskId,
+                Task_app_Acronym: appAcronym,
+                Task_state: newState
+              };
+            
+              // Log the request payload to check what you're sending
+              console.log("Email request payload:", requestPayload);
+            
+              try {
+                // Send the email request
+                const emailResponse = await axios.post(
+                  "http://localhost:8080/emails",
+                  requestPayload,  // Use the requestPayload here
+                  { withCredentials: true }
+                );
+                console.log("Email response:", emailResponse.data);  // Log the email response
+              } catch (error) {
+                console.error("Error sending email:", error);
+              }
+            }            
       } else {
         console.error("Error updating task state:", response.data.message);
         alert(`Error: ${response.data.message}`);
