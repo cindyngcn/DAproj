@@ -550,7 +550,7 @@ const conditionalButtons = () => {
             Seek Approval
           </button>
           <button
-            onClick={() => alert("Request for Deadline Extension clicked")} // Placeholder for Request for Deadline Extension
+            onClick={() => {alert("Request for Deadline Extension clicked"); handleReturnToTodo();}} // Placeholder for Request for Deadline Extension
             style={{
               padding: "10px 20px",
               backgroundColor: "#dc3545", // Danger color
