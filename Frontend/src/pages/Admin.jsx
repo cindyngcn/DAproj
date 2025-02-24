@@ -237,12 +237,14 @@ export default function Admin() {
                   />
                 </TableCell>
                 <TableCell>
-                  <TextField
+                  <textarea
                     name="App_Description"
                     value={newApp.App_Description || ""}
                     onChange={handleNewAppChange}
                     label="Description"
                     fullWidth
+                    multiline // Allow multiline input
+                    rows={5}  // Optional: Set the number of visible rows
                   />
                 </TableCell>
                 <TableCell>
@@ -351,12 +353,14 @@ export default function Admin() {
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <TextField
+                    <textarea
                       name="App_Description"
                       value={updatedApps[app.App_Acronym]?.App_Description || app.App_Description || ""}
                       onChange={(e) => handleUpdateChange(e, app)}
                       placeholder="Enter description"
                       fullWidth
+                      multiline // Allow multiline input
+                      rows={5}  // Optional: Set the number of visible rows
                     />
                   </TableCell>
                   <TableCell>

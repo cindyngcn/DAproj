@@ -524,7 +524,7 @@ const conditionalButtons = () => {
       {task.Task_state === "DOING" && userPermissions.Doing &&(
         <>
           <button
-            onClick={handleReturnToTodo} // New function for "Return Task to TODO"
+            onClick={() => {handleReturnToTodo(), handleNewNote()}} // New function for "Return Task to TODO"
             style={{
               padding: "10px 20px",
               backgroundColor: "#ffc107", // Yellow for Return button
@@ -537,7 +537,7 @@ const conditionalButtons = () => {
             Return Task to TODO
           </button>
           <button
-            onClick={handleSeekApproval} // Function to change state to DONE
+            onClick={() => {handleSeekApproval(); handleNewNote()}} // Function to change state to DONE
             style={{
               padding: "10px 20px",
               backgroundColor: "#17a2b8", // Info color
@@ -550,7 +550,7 @@ const conditionalButtons = () => {
             Seek Approval
           </button>
           <button
-            onClick={() => {alert("Request for Deadline Extension clicked"); handleReturnToTodo();}} // Placeholder for Request for Deadline Extension
+            onClick={() => {alert("Request for Deadline Extension clicked"); handleSeekApproval(); handleNewNote()}} // Placeholder for Request for Deadline Extension
             style={{
               padding: "10px 20px",
               backgroundColor: "#dc3545", // Danger color
@@ -568,7 +568,7 @@ const conditionalButtons = () => {
       {task.Task_state === "DONE" && userPermissions.Done &&(
         <div>
           <button
-            onClick={() => {alert("Task rejected due to plan changed"); handleRejectTask();}}
+            onClick={() => {alert("Task rejected due to plan changed"); handleRejectTask();handleNewNote()}}
             style={{
               padding: "10px 20px",
               backgroundColor: "#dc3545", // Red for Reject button
@@ -590,6 +590,7 @@ const conditionalButtons = () => {
               color: "#fff",
               cursor: "pointer"
             }}
+            disabled={(selectedPlan !== task.Task_plan)}
           >
             Approve Task
           </button>
@@ -624,7 +625,6 @@ const saveChangesButton = () => {
           width: "48%"
         }}
         onClick={() => {
-          handlePlanChange(selectedPlan);  // Now it runs only when saving
           handleNewNote();
         }}
       >
