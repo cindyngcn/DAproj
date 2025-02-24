@@ -365,7 +365,7 @@ const renderTaskID = () => {
 }
 
 const renderTaskPlan = () => {
-  if (task.Task_state !== "OPEN" && task.Task_state !== "DONE"){
+  if (task.Task_state !== "OPEN" && task.Task_state !== "DOING" && task.Task_state !== "DONE"){
     return (
      <div>
       <label style={{ fontWeight: "600" }}>Plan:</label>
