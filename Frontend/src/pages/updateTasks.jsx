@@ -568,7 +568,7 @@ const conditionalButtons = () => {
       {task.Task_state === "DONE" && userPermissions.Done &&(
         <div>
           <button
-            onClick={handleRejectTask} // Function to reject the task
+            onClick={() => {alert("Task rejected due to plan changed"); handleRejectTask();}}
             style={{
               padding: "10px 20px",
               backgroundColor: "#dc3545", // Red for Reject button
@@ -581,7 +581,7 @@ const conditionalButtons = () => {
             Reject Task
           </button>
           <button
-            onClick={handleApproveTask} // Function to approve the task
+            onClick={() => {alert("Task Approved!!Moving to CLOSED state..."); handleApproveTask();}}
             style={{
               padding: "10px 20px",
               backgroundColor: "#28a745", // Green for Approve button
