@@ -192,7 +192,7 @@ export default function UpdateTasks() {
       alert("An error occurred while updating the task state.");
     }
   };*/
-  const updateTaskState = async (newState) => { 
+  const updateTaskState = async (newState) => {
     try {
       const response = await axios.put(
         "http://localhost:8080/updateTaskState",
@@ -224,6 +224,7 @@ export default function UpdateTasks() {
             },
             { withCredentials: true }
           );
+          console.log("Email response:", emailResponse.data);
         }
       } else {
         console.error("Error updating task state:", response.data.message);
@@ -233,7 +234,7 @@ export default function UpdateTasks() {
       console.error("Error updating task state:", error);
       alert("An error occurred while updating the task state.");
     }
-  };  
+  };
 
   // Generalized Task State Transition Handler
   const handleTaskStateTransition = async (targetState, validStates, alertMessage, currentState) => {
@@ -665,7 +666,7 @@ const saveChangesButton = () => {
         </button>
     
      
-          <form style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
             {/* Left Section (Task Details) */}
             <div style={{ flex: "1", minWidth: "300px", display: "flex", flexDirection: "column", gap: "15px" }}>
               {/* Task Name and Task State */}
@@ -684,6 +685,7 @@ const saveChangesButton = () => {
               {renderTaskDescription()}
 
               {/* Conditional Buttons for Task State */}
+              
               {conditionalButtons()}
 
             </div>
@@ -696,7 +698,7 @@ const saveChangesButton = () => {
               {/* New Note Input */}
               {renderNewNote()}
             </div>
-          </form>
+          </div>
 
         {/* Buttons */}
         {saveChangesButton()}
