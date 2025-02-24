@@ -47,6 +47,7 @@ const getTaskRouter = require('./Routers/getTaskRouter.js');
 const updateTaskRouter = require('./Routers/updateTaskRouter.js');
 const updateTaskStateRouter = require('./Routers/updateTaskStateRouter.js');
 const UserAppPermitRouter = require('./Routers/UserAppPermitRouter.js');
+const emailRouter = require('./Routers/emailRouter.js');
 
 // Over-splitting - e.g. 1 for task, 1 for authentication
 app.use('/createUser', createUserRouter);
@@ -64,6 +65,7 @@ app.use('/getTask', getTaskRouter);
 app.use('/updateTask', updateTaskRouter);
 app.use('/updateTaskState', updateTaskStateRouter);
 app.use('/checkPermits', UserAppPermitRouter);
+app.use('/emails', emailRouter);
 
 app.get('/user', (req, res) => {
   const token = req.cookies.authToken;  // Ensure correct cookie name
