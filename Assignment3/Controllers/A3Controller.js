@@ -347,16 +347,27 @@ const promoteTask2Done = async (req, res) => {
             return res.status(400).json({ message: 'Task not in DOING state' });
         }
 
-        const note = {
+        /*const note = {
             text: notes,
             user: username,
             date_posted: new Date(),
             type: 'comment',
             currState: task[0].Task_state,
-        }
+        }*/
 
         let parsedNotes = task[0]?.Task_notes ? JSON.parse(task[0].Task_notes) : [];
+
+        if (notes){
+            const note = {
+                text: notes,
+                user: username,
+                date_posted: new Date(),
+                type: "comment",
+                currentState: task[0].Task_state,
+            }
+
         parsedNotes.unshift(note);
+        }
 
         parsedNotes = notes ? parsedNotes : null;
 

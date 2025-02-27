@@ -10,5 +10,12 @@ router.get("/*", (req, res) => {
     res.status(404).send("Invalid URL");
 });
 
+router.post("/*", (req, res) => {
+    res.status(404).send("Invalid URL");
+});
+
+router.patch("/*", (req, res) => {
+    res.status(404).send("Invalid URL");
+});
 
 module.exports = router;
