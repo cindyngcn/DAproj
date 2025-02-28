@@ -6,16 +6,7 @@ const {createTask, getTaskbyState, promoteTask2Done} = require('../Controllers/A
 router.post("/CreateTask", createTask);
 router.post("/GetTaskbyState", getTaskbyState);
 router.patch("/PromoteTask2Done", promoteTask2Done);
-router.get("/*", (req, res) => {
-    res.status(404).send("Invalid URL");
+router.all("/*", (req, res) => {
+    res.status(404).send("E1001");
 });
-
-router.post("/*", (req, res) => {
-    res.status(404).send("Invalid URL");
-});
-
-router.patch("/*", (req, res) => {
-    res.status(404).send("Invalid URL");
-});
-
 module.exports = router;
