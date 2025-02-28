@@ -452,9 +452,9 @@ const promoteTask2Done = async (req, res) => {
         //parsedNotes = notes ? parsedNotes : null;
 
         const task_app_acronym = task[0].Task_app_Acronym;
-        if (!(await checkAppPermit(username, 'DONE', task_app_acronym))) {
+        if (!(await checkAppPermit(username, 'DOING', task_app_acronym))) {
             await connection.rollback();
-            return res.status(403).json({ message: 'Forbidden' });
+            return res.status(403).json({ code: 'E3002' });
         }
 
         await connection.execute("UPDATE task SET Task_state = 'DONE', Task_notes = ? WHERE Task_id = ?", [ parsedNotes, task_id]);
