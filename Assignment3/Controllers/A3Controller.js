@@ -328,7 +328,7 @@ const getTaskbyState = async (req, res) => {
             return res.status(401).json({ code: 'E3001' });
         }
 
-        try {
+        
             const [tasks] = await connection.execute("SELECT * FROM task WHERE Task_state = ? AND Task_app_Acronym = ?", [state, task_app_acronym]);
 
             const formattedTasks = tasks.map(task => {
@@ -342,12 +342,12 @@ const getTaskbyState = async (req, res) => {
                         parsedNotes = JSON.parse(task.Task_notes);
                     } else {
                         // If no notes are provided, set it as an empty JSON object
-                        parsedNotes = { note: "No notes provided" };
+                        parsedNotes = { message: "[]" };
                     }
                 } catch (error) {
                     // If JSON parsing fails, set the notes as a default object
                     console.error('Failed to parse task notes:', error);
-                    parsedNotes = { error: "Failed to parse notes" }; // Indicate a parsing error
+                    parsedNotes = { message: "[]" }; // Indicate a parsing error
                 }
 
                 return {
@@ -368,10 +368,7 @@ const getTaskbyState = async (req, res) => {
                 code: 'S0001',
                 tasks: formattedTasks
             });
-        } catch (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ code: 'E3002' });
-        }
+        
 
     } catch (err) {
         console.error("Error getting tasks by state:", err);
