@@ -423,7 +423,7 @@ const promoteTask2Done = async (req, res) => {
         const task_state = task[0].Task_state;
         if (task_state !== 'DOING') {
             await connection.rollback();
-            return res.status(400).json({ message: 'Task not in DOING state' });
+            return res.status(400).json({ code: '4002' });
         }
 
         /*const note = {
