@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 
 # Comments are provided throughout this file to help you get started.
 # If you need more help, visit the Dockerfile reference guide at
@@ -48,8 +47,10 @@ WORKDIR /app
 # Copy the application source code
 COPY . .
 
+RUN npm cache clean --force
+
 # Install dependencies
-RUN npm install
+RUN npm install assignment3-1.0.0.tgz
 
 # Create non-system user (without password, -D)
 RUN adduser -D user
