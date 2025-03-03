@@ -15,5 +15,6 @@
     "express": "^4.21.2",
     "mysql2": "^3.12.0",
     "nodemailer": "^6.10.0"
-  }
+  },
+  "bundleDependencies":true
 }
