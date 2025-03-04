@@ -31,14 +31,24 @@ async function mail({ app_acronym, task_id }) {
     const subject = `${app_acronym} - New task in Done state for review! - ${task_id}`;
     const text = `New Task for review in ${app_acronym}! Log in to approve/reject`;
 
-  const info = await transporter.sendMail({
-    from: '" TMS System 👻" <rossie.marks@ethereal.email>', // sender address
-    to: emailList, // list of receivers
-    subject: subject,
-    text: text,
-  });
+    let message = {
+      from: '" TMS System 👻" <rossie.marks@ethereal.email>', // sender address
+      to: emailList, // list of receivers
+      subject: subject,
+      text: text,
+    };
 
-  console.log("Message sent: %s", info.messageId);
+    try{
+      const info = await transporter.sendMail(message, (error, info) => {
+      if (error) {
+        return null;
+      }
+      console.log("Message sent: %s", info.messageId);
+    });
+    }
+    catch (err) {
+      console.log("Email error", err);
+    }
 }
 
 
