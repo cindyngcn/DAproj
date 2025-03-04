@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "assignment3": "file:../../Shared/assignment3-1.0.0.tgz"
+  }
+}
