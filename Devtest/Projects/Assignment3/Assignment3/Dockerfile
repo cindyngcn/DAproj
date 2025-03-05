@@ -37,7 +37,7 @@ RUN chmod 700 -R /home
 USER user
 
 # Expose the port your application runs on (if applicable, for documentation only)
-EXPOSE 8000
+# EXPOSE 8000
 
 # Define the command to run your application
 CMD [ "node", "index.js" ]
