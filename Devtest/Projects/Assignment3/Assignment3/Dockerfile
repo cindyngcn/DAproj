@@ -13,9 +13,6 @@ RUN npm install assignment3-1.0.0.tgz
 # Copy the application source code to the container
 COPY . .
 
-# Clean npm cache
-RUN npm cache clean --force
-
 # Debug step: Compare the package.json files
 RUN cmp package.json node_modules/assignment3/package.json || exit 1
 
@@ -24,6 +21,9 @@ RUN mv ./node_modules ./new_node_modules
 
 # Move to the source code directory
 RUN mv ./new_node_modules/assignment3/node_modules ./
+
+# Removing
+RUN rm -r ./new_node_modules && rm assignment3-1.0.0.tgz && rm package-lock.json
 
 # Create non-system user (without password, -D)
 RUN adduser -D user
@@ -35,9 +35,6 @@ RUN chmod 555 -R /app
 RUN chmod 700 -R /home
 
 USER user
-
-# Expose the port your application runs on (if applicable, for documentation only)
-# EXPOSE 8000
 
 # Define the command to run your application
 CMD [ "node", "index.js" ]
